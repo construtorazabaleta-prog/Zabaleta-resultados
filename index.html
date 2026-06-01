@@ -275,40 +275,84 @@ td.c{text-align:center}
 </div>
 
 <div class="krow">
+  <!-- TOTAL -->
   <div class="card red" onclick="toggle('vend-total')" id="kpi-vend-total-val">
-    <div class="klbl">Total negócios</div>
-    <div class="kval"><span class="kv">14</span></div>
-    <div class="ksub"><span class="ks">11 vendas + 3 cessões</span></div>
+    <div class="klbl">Total vendido</div>
+    <div class="kval"><span class="kv">14</span><sub> un</sub></div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.15)">
+      <div style="font-size:13px;font-weight:600;color:#fff"><span id="kv-total-rec">R$ 2,99M</span></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px"><span id="kv-total-sub">Jan–Mai acumulado</span></div>
+    </div>
     <span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggle('vend-rec')" id="kpi-vend-rec-val">
-    <div class="klbl">Receita realizada</div>
-    <div class="kval"><span class="kv">R$ 2,99M</span></div>
-    <div class="ksub"><span class="ks">Jan–Mar acumulado</span></div>
+
+  <!-- TOWER -->
+  <div class="card" onclick="toggle('vend-tower')" id="kpi-vend-tower-val">
+    <div class="klbl">Tower</div>
+    <div class="kval"><span class="kv-un" id="kv-tower-un">9</span><sub> un</sub></div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--b)">
+      <div style="font-size:12px;font-weight:600;color:var(--t)"><span id="kv-tower-rec">R$ 1,78M</span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:10px;color:var(--t3)">Meta: <span id="kv-tower-meta">—</span></span>
+        <span style="font-size:10px;font-weight:600" id="kv-tower-pct"></span>
+      </div>
+      <div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden">
+        <div id="kv-tower-bar" style="height:100%;border-radius:2px;background:#8B2E2E;width:0%;transition:width .4s"></div>
+      </div>
+    </div>
     <span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggle('vend-meta')" id="kpi-vend-meta-val">
-    <div class="klbl">Meta mensal (Mai+)</div>
-    <div class="kval"><span class="kv">R$ 3M</span></div>
-    <div class="ksub"><span class="ks">R$ 1M/emp · Mai–Jun</span></div>
+
+  <!-- OFFICE -->
+  <div class="card" onclick="toggle('vend-office')" id="kpi-vend-office-val">
+    <div class="klbl">Office</div>
+    <div class="kval"><span class="kv-un" id="kv-office-un">3</span><sub> un</sub></div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--b)">
+      <div style="font-size:12px;font-weight:600;color:var(--t)"><span id="kv-office-rec">R$ 774k</span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:10px;color:var(--t3)">Meta: <span id="kv-office-meta">—</span></span>
+        <span style="font-size:10px;font-weight:600" id="kv-office-pct"></span>
+      </div>
+      <div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden">
+        <div id="kv-office-bar" style="height:100%;border-radius:2px;background:#C9943A;width:0%;transition:width .4s"></div>
+      </div>
+    </div>
     <span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggle('vend-ticket')" id="kpi-vend-ticket-val">
-    <div class="klbl">Ticket médio</div>
-    <div class="kval"><span class="kv">R$ 282k</span></div>
-    <div class="ksub"><span class="ks">por negócio com valor</span></div>
+
+  <!-- RMZ -->
+  <div class="card" onclick="toggle('vend-rmz')" id="kpi-vend-rmz-val">
+    <div class="klbl">Res. M. Zabaleta</div>
+    <div class="kval"><span class="kv-un" id="kv-rmz-un">0</span><sub> un</sub></div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--b)">
+      <div style="font-size:12px;font-weight:600;color:var(--t)"><span id="kv-rmz-rec">R$ 0</span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:10px;color:var(--t3)">Meta: <span id="kv-rmz-meta">—</span></span>
+        <span style="font-size:10px;font-weight:600" id="kv-rmz-pct"></span>
+      </div>
+      <div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden">
+        <div id="kv-rmz-bar" style="height:100%;border-radius:2px;background:#5a7a9a;width:0%;transition:width .4s"></div>
+      </div>
+    </div>
     <span class="kchev">▼</span>
   </div>
+
+  <!-- TERCEIROS -->
+  <div class="card" onclick="toggle('vend-terc')" id="kpi-vend-terc-val">
+    <div class="klbl">Terceiros</div>
+    <div class="kval"><span class="kv-un" id="kv-terc-un">2</span><sub> un</sub></div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--b)">
+      <div style="font-size:12px;font-weight:600;color:var(--t)"><span id="kv-terc-rec">R$ 430k</span></div>
+      <div style="font-size:10px;color:var(--t3);margin-top:4px">sem meta definida</div>
+    </div>
+    <span class="kchev">▼</span>
+  </div>
+
+  <!-- TICKET / LÍDER -->
   <div class="card" onclick="toggle('vend-imob')" id="kpi-vend-imob-val">
     <div class="klbl">Líder imobiliária</div>
     <div class="kval"><span class="kv">Villar</span></div>
-    <div class="ksub"><span class="ks">6 unidades negociadas</span></div>
-    <span class="kchev">▼</span>
-  </div>
-  <div class="card" onclick="toggle('vend-mes')" id="kpi-vend-mes-val">
-    <div class="klbl">Melhor mês</div>
-    <div class="kval"><span class="kv">Janeiro</span></div>
-    <div class="ksub"><span class="ks">R$ 2,26M · 8 negócios</span></div>
+    <div class="ksub"><span class="ks">6 unidades</span></div>
     <span class="kchev">▼</span>
   </div>
 </div>
@@ -317,6 +361,50 @@ td.c{text-align:center}
 <div style="margin-bottom:12px" id="gerentes-section">
   <div style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">Por gerente</div>
   <div id="gerentes-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px"></div>
+</div>
+
+<div class="drawer" id="vend-tower">
+  <div class="drawer-inner">
+    <div class="drawer-title">Tower — vendas detalhadas</div>
+    <div class="drawer-sub">Negócios registrados no período</div>
+    <div class="tw"><table>
+      <thead><tr><th>Mês</th><th>Unidade</th><th>Tipo</th><th>Imobiliária</th><th>Corretor</th><th>Gerente</th><th style="text-align:right">Valor</th></tr></thead>
+      <tbody id="tb-vend-tower"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="drawer" id="vend-office">
+  <div class="drawer-inner">
+    <div class="drawer-title">Office — vendas detalhadas</div>
+    <div class="drawer-sub">Negócios registrados no período</div>
+    <div class="tw"><table>
+      <thead><tr><th>Mês</th><th>Unidade</th><th>Tipo</th><th>Imobiliária</th><th>Corretor</th><th>Gerente</th><th style="text-align:right">Valor</th></tr></thead>
+      <tbody id="tb-vend-office"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="drawer" id="vend-rmz">
+  <div class="drawer-inner">
+    <div class="drawer-title">Res. Miguel Zabaleta — vendas detalhadas</div>
+    <div class="drawer-sub">Negócios registrados no período</div>
+    <div class="tw"><table>
+      <thead><tr><th>Mês</th><th>Unidade</th><th>Tipo</th><th>Imobiliária</th><th>Corretor</th><th>Gerente</th><th style="text-align:right">Valor</th></tr></thead>
+      <tbody id="tb-vend-rmz"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div class="drawer" id="vend-terc">
+  <div class="drawer-inner">
+    <div class="drawer-title">Terceiros — vendas detalhadas</div>
+    <div class="drawer-sub">Negócios registrados no período</div>
+    <div class="tw"><table>
+      <thead><tr><th>Mês</th><th>Unidade</th><th>Tipo</th><th>Imobiliária</th><th>Corretor</th><th>Gerente</th><th style="text-align:right">Valor</th></tr></thead>
+      <tbody id="tb-vend-terc"></tbody>
+    </table></div>
+  </div>
 </div>
 
 <div class="drawer" id="vend-total">
@@ -855,10 +943,10 @@ async function loadAllSheets() {
       metaRows.slice(1).forEach((row, i) => {
         if(i >= 6) return;
         const mes = mesesMeta[i];
-        // Metas vêm em R$ mil na planilha → multiplicar por 1000
-        const rmz    = (parsePtBR(row[2]) || 0) * 1000;  // Meta RMZ
-        const office = (parsePtBR(row[3]) || 0) * 1000;  // Meta Office
-        const tower  = (parsePtBR(row[4]) || 0) * 1000;  // Meta Tower
+        // Metas vêm em R$ na planilha
+        const rmz    = parsePtBR(row[2]) || 0;  // Meta RMZ
+        const office = parsePtBR(row[3]) || 0;  // Meta Office
+        const tower  = parsePtBR(row[4]) || 0;  // Meta Tower
         METAS.rmz[i]    = rmz;
         METAS.office[i] = office;
         METAS.tower[i]  = tower;
@@ -1784,6 +1872,27 @@ function fillAll(){
   // Vendas
   const tv=document.getElementById('tb-vend-all');
   VENDAS.forEach(v=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${v.mes}</td><td style="color:var(--t)">${v.emp}</td><td>${v.un}</td><td><span class="tag ${v.tipo==='Venda'?'tg':'tb'}">${v.tipo==='Venda'?'Venda':'Cessão'}</span></td><td>${v.imob}</td><td>${v.cor}</td><td class="r">${v.val>0?fR(v.val):'<span style="color:var(--t3)">–</span>'}</td>`;tv.appendChild(tr);});
+  // Tabelas por empreendimento
+  ['Tower','Office','Res. Miguel Zabaleta','Terceiros'].forEach(emp => {
+    const idMap = {'Tower':'tb-vend-tower','Office':'tb-vend-office','Res. Miguel Zabaleta':'tb-vend-rmz','Terceiros':'tb-vend-terc'};
+    const tb = document.getElementById(idMap[emp]);
+    if(tb && !tb.innerHTML) {
+      const sub = vendasFiltradas().filter(v=>v.emp===emp);
+      if(sub.length===0) {
+        tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">Nenhuma venda de ${emp} no período</td></tr>`;
+      } else {
+        sub.forEach(v=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${v.mes}</td><td>${v.un}</td>
+            <td><span class="tag ${v.tipo==='Venda'?'tg':'tb'}">${v.tipo==='Venda'?'Venda':'Cessão'}</span></td>
+            <td>${v.imob}</td><td>${v.cor}</td><td>${v.gerente}</td>
+            <td class="r">${v.val>0?fR(v.val):'<span style="color:var(--t3)">–</span>'}</td>`;
+          tb.appendChild(tr);
+        });
+      }
+    }
+  });
+
   // Visitas destaque
   const tvis=document.getElementById('tb-vis-negs');
   VIS_DEST.forEach(v=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${v.mes}</td><td style="color:var(--t);font-weight:500">${v.imob}</td><td>${v.ger}</td><td class="r">${v.cor}</td><td class="c"><span class="tag tg">${v.eng}/10</span></td><td style="color:#7abf7a">${v.neg}</td>`;tvis.appendChild(tr);});
@@ -2116,6 +2225,27 @@ function refilTables() {
     }
   }
 
+  // Tabelas por empreendimento
+  ['Tower','Office','Res. Miguel Zabaleta','Terceiros'].forEach(emp => {
+    const idMap = {'Tower':'tb-vend-tower','Office':'tb-vend-office','Res. Miguel Zabaleta':'tb-vend-rmz','Terceiros':'tb-vend-terc'};
+    const tb = document.getElementById(idMap[emp]);
+    if(tb && !tb.innerHTML) {
+      const sub = vendasFiltradas().filter(v=>v.emp===emp);
+      if(sub.length===0) {
+        tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">Nenhuma venda de ${emp} no período</td></tr>`;
+      } else {
+        sub.forEach(v=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${v.mes}</td><td>${v.un}</td>
+            <td><span class="tag ${v.tipo==='Venda'?'tg':'tb'}">${v.tipo==='Venda'?'Venda':'Cessão'}</span></td>
+            <td>${v.imob}</td><td>${v.cor}</td><td>${v.gerente}</td>
+            <td class="r">${v.val>0?fR(v.val):'<span style="color:var(--t3)">–</span>'}</td>`;
+          tb.appendChild(tr);
+        });
+      }
+    }
+  });
+
   // Visitas destaque
   const tvis = document.getElementById('tb-vis-negs');
   if(tvis && !tvis.innerHTML) {
@@ -2184,15 +2314,45 @@ function atualizarKPIs() {
   const metaMes = MES_ATIVO !== 'todos' && idxMes>=0 ? METAS.total[idxMes] : 0;
   const pctMeta = metaMes>0 ? Math.round(totalRec/metaMes*100) : null;
 
-  setKPI('kpi-vend-total-val', totalNeg+'',
-    vf.filter(v=>v.tipo==='Venda').length+' vendas · '+vf.filter(v=>v.tipo!=='Venda').length+' cessões');
-  setKPI('kpi-vend-rec-val', totalRec>0?fR(totalRec):'R$ 0', label);
-  setKPI('kpi-vend-meta-val',
-    metaMes>0 ? fR(metaMes) : '—',
-    metaMes>0 ? (pctMeta+'% atingido') : 'sem meta neste mês');
-  setKPI('kpi-vend-ticket-val', ticket>0?fR(ticket):'—', 'por negócio com valor');
+  // Card total
+  setKPI('kpi-vend-total-val', totalNeg+' un', '');
+  const elTotalRec = document.getElementById('kv-total-rec');
+  const elTotalSub = document.getElementById('kv-total-sub');
+  if(elTotalRec) elTotalRec.textContent = totalRec>0?fR(totalRec):'R$ 0';
+  if(elTotalSub) elTotalSub.textContent = label;
+
+  // Cards por empreendimento
+  const empsVend = [
+    {key:'Tower',     idUn:'kv-tower-un',  idRec:'kv-tower-rec',  idMeta:'kv-tower-meta',  idPct:'kv-tower-pct',  idBar:'kv-tower-bar',  cor:'#8B2E2E', metaArr:METAS.tower},
+    {key:'Office',    idUn:'kv-office-un', idRec:'kv-office-rec', idMeta:'kv-office-meta', idPct:'kv-office-pct', idBar:'kv-office-bar', cor:'#C9943A', metaArr:METAS.office},
+    {key:'Res. Miguel Zabaleta', idUn:'kv-rmz-un', idRec:'kv-rmz-rec', idMeta:'kv-rmz-meta', idPct:'kv-rmz-pct', idBar:'kv-rmz-bar', cor:'#5a7a9a', metaArr:METAS.rmz},
+    {key:'Terceiros', idUn:'kv-terc-un',   idRec:'kv-terc-rec'},
+  ];
+  empsVend.forEach(({key,idUn,idRec,idMeta,idPct,idBar,cor,metaArr}) => {
+    const sub = vf.filter(v=>v.emp===key);
+    const rec = sub.reduce((a,v)=>a+v.val,0);
+    const un  = sub.length;
+    if(document.getElementById(idUn))  document.getElementById(idUn).textContent  = un;
+    if(document.getElementById(idRec)) document.getElementById(idRec).textContent = fR(rec);
+    if(idMeta && metaArr) {
+      const meta = MES_ATIVO==='todos'
+        ? metaArr.reduce((a,b)=>a+b,0)
+        : (metaArr[METAS.meses.indexOf(MES_ATIVO)]||0);
+      const pct = meta>0 ? Math.round(rec/meta*100) : null;
+      if(document.getElementById(idMeta)) document.getElementById(idMeta).textContent = meta>0?fR(meta):'—';
+      if(document.getElementById(idPct)) {
+        const el = document.getElementById(idPct);
+        if(pct!==null) { el.textContent=pct+'%'; el.style.color=pct>=100?'#7abf7a':'#c07070'; }
+        else el.textContent='';
+      }
+      if(document.getElementById(idBar)) {
+        document.getElementById(idBar).style.width = meta>0?Math.min(pct||0,100)+'%':'0%';
+      }
+    }
+  });
+
+  // Líder imobiliária
   setKPI('kpi-vend-imob-val', lider?lider[0]:'—', lider?lider[1]+' unidades':'sem vendas');
-  setKPI('kpi-vend-mes-val', label, totalRec>0?fR(totalRec)+' · '+totalNeg+' neg.':'sem vendas');
 
   // ── VISITAS ──
   setKPI('kpi-vis-total-val', vis.vis+'', 'em '+vis.imobs+' imobiliárias · '+label);
