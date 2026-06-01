@@ -833,7 +833,11 @@ async function loadAllSheets() {
       r['Mês de venda'] && r['Empreendimento'] &&
       ['Janeiro','Fevereiro','Março','Abril','Maio','Junho'].includes(r['Mês de venda'])
     );
-    const capMesV = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
+    const capMesV = s => {
+      if(!s) return '';
+      const m = String(s).split('/')[0].trim();
+      return m.charAt(0).toUpperCase() + m.slice(1).toLowerCase();
+    };
     LIVE_DATA.vendas = vendObjs.map(r => ({
       mes: capMesV(r['Mês de venda']),
       emp: r['Empreendimento'],
@@ -866,7 +870,11 @@ async function loadAllSheets() {
     // ── PROCESSAR ESTOQUE ──
     const estObjs = rowsToObjects(estRows).filter(r => r['Mês'] && r['Empreendimento']);
     // Capitalizar mês: 'janeiro' → 'Janeiro'
-    const capMes = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
+    const capMes = s => {
+      if(!s) return '';
+      const m = String(s).split('/')[0].trim();
+      return m.charAt(0).toUpperCase() + m.slice(1).toLowerCase();
+    };
     LIVE_DATA.estoque = estObjs.map(r => ({
       mes: capMes(r['Mês']),
       emp: r['Empreendimento'],
@@ -876,8 +884,14 @@ async function loadAllSheets() {
 
     // ── PROCESSAR VISITAS ──
     const visObjs = rowsToObjects(visRows).filter(r => r['Mês']);
+    const normMes = s => {
+      if(!s) return '';
+      // Remove ano: 'janeiro/2026' → 'janeiro', capitaliza
+      const m = String(s).split('/')[0].trim();
+      return m.charAt(0).toUpperCase() + m.slice(1).toLowerCase();
+    };
     LIVE_DATA.visitas = visObjs.map(r => ({
-      mes: r['Mês'],
+      mes: normMes(r['Mês']),
       gerente: r['Gerente'] || '',
       imob: normImob(r['Imobiliária']),
       corretores: parseInt(r['Corretores impactados']) || 0,
