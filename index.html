@@ -1040,7 +1040,24 @@ async function loadAllSheets() {
       });
 
       // Recalcular dados por gerente de vendas
-      const gerNomes = ['Ricardo','Jonata','Lara'];
+      // Garante que todo gerente dos dados ao vivo existe no array
+      const gerNomesLive = [...new Set(
+        LIVE_DATA.vendas.flatMap(v => (v.gerente||'').split(',').map(x=>x.trim()).filter(Boolean))
+      )];
+      gerNomesLive.forEach(nome => {
+        if(!GERENTES.find(g=>g.nome===nome)) {
+          const cores = ['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a','#7a5a9a'];
+          GERENTES.push({
+            nome, foto: nome.charAt(0).toUpperCase(), cor: cores[GERENTES.length % cores.length],
+            total_negocios:0, total_receita:0,
+            por_mes: {'Janeiro':{negocios:0,receita:0},'Fevereiro':{negocios:0,receita:0},'Março':{negocios:0,receita:0},'Abril':{negocios:0,receita:0},'Maio':{negocios:0,receita:0},'Junho':{negocios:0,receita:0}},
+            por_emp: {'Tower':{negocios:0,receita:0},'Office':{negocios:0,receita:0},'Terceiros':{negocios:0,receita:0},'Res. Miguel Zabaleta':{negocios:0,receita:0}},
+            melhor_mes:'', ticket_medio:0,
+          });
+        }
+      });
+
+      const gerNomes = GERENTES.map(g=>g.nome);
       gerNomes.forEach((nome, gi) => {
         const g = GERENTES[gi];
         if(!g) return;
@@ -1216,27 +1233,25 @@ function showError(msg) {
 // ══ GERENTES ══
 const GERENTES = [
   {
-    nome: 'Ricardo',
-    foto: 'R',
-    cor: '#8B2E2E',
-    total_negocios: 14,
-    total_receita: 2988046,
-    por_mes: {
-      'Janeiro':   {negocios:8, receita:2263679},
-      'Fevereiro': {negocios:2, receita:250000},
-      'Março':     {negocios:4, receita:474367},
-      'Abril':     {negocios:0, receita:0},
-      'Maio':      {negocios:0, receita:0},
-      'Junho':     {negocios:0, receita:0},
-    },
-    por_emp: {
-      'Tower':                {negocios:9,  receita:1783549},
-      'Office':               {negocios:3,  receita:774497},
-      'Terceiros':            {negocios:2,  receita:430000},
-      'Res. Miguel Zabaleta': {negocios:0,  receita:0},
-    },
-    melhor_mes: 'Janeiro',
-    ticket_medio: 282000,
+    nome: 'Ricardo', foto: 'R', cor: '#8B2E2E',
+    total_negocios: 0, total_receita: 0,
+    por_mes: {'Janeiro':{negocios:0,receita:0},'Fevereiro':{negocios:0,receita:0},'Março':{negocios:0,receita:0},'Abril':{negocios:0,receita:0},'Maio':{negocios:0,receita:0},'Junho':{negocios:0,receita:0}},
+    por_emp: {'Tower':{negocios:0,receita:0},'Office':{negocios:0,receita:0},'Terceiros':{negocios:0,receita:0},'Res. Miguel Zabaleta':{negocios:0,receita:0}},
+    melhor_mes: '', ticket_medio: 0,
+  },
+  {
+    nome: 'Jonata', foto: 'J', cor: '#C9943A',
+    total_negocios: 0, total_receita: 0,
+    por_mes: {'Janeiro':{negocios:0,receita:0},'Fevereiro':{negocios:0,receita:0},'Março':{negocios:0,receita:0},'Abril':{negocios:0,receita:0},'Maio':{negocios:0,receita:0},'Junho':{negocios:0,receita:0}},
+    por_emp: {'Tower':{negocios:0,receita:0},'Office':{negocios:0,receita:0},'Terceiros':{negocios:0,receita:0},'Res. Miguel Zabaleta':{negocios:0,receita:0}},
+    melhor_mes: '', ticket_medio: 0,
+  },
+  {
+    nome: 'Lara', foto: 'L', cor: '#5a7a9a',
+    total_negocios: 0, total_receita: 0,
+    por_mes: {'Janeiro':{negocios:0,receita:0},'Fevereiro':{negocios:0,receita:0},'Março':{negocios:0,receita:0},'Abril':{negocios:0,receita:0},'Maio':{negocios:0,receita:0},'Junho':{negocios:0,receita:0}},
+    por_emp: {'Tower':{negocios:0,receita:0},'Office':{negocios:0,receita:0},'Terceiros':{negocios:0,receita:0},'Res. Miguel Zabaleta':{negocios:0,receita:0}},
+    melhor_mes: '', ticket_medio: 0,
   },
 ];
 
