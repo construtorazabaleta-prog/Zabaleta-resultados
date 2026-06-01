@@ -833,8 +833,9 @@ async function loadAllSheets() {
       r['Mês de venda'] && r['Empreendimento'] &&
       ['Janeiro','Fevereiro','Março','Abril','Maio','Junho'].includes(r['Mês de venda'])
     );
+    const capMesV = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
     LIVE_DATA.vendas = vendObjs.map(r => ({
-      mes: r['Mês de venda'],
+      mes: capMesV(r['Mês de venda']),
       emp: r['Empreendimento'],
       un: r['Unidade'],
       tipo: r['Tipo'] || 'Venda',
@@ -850,10 +851,10 @@ async function loadAllSheets() {
       metaRows.slice(1).forEach((row, i) => {
         if(i >= 6) return;
         const mes = mesesMeta[i];
-        // Metas já vêm em R$ (não em R$ mil) conforme planilha
-        const rmz    = parsePtBR(row[2]) || 0;  // Meta RMZ
-        const office = parsePtBR(row[3]) || 0;  // Meta Office  
-        const tower  = parsePtBR(row[4]) || 0;  // Meta Tower
+        // Metas vêm em R$ mil na planilha → multiplicar por 1000
+        const rmz    = (parsePtBR(row[2]) || 0) * 1000;  // Meta RMZ
+        const office = (parsePtBR(row[3]) || 0) * 1000;  // Meta Office
+        const tower  = (parsePtBR(row[4]) || 0) * 1000;  // Meta Tower
         METAS.rmz[i]    = rmz;
         METAS.office[i] = office;
         METAS.tower[i]  = tower;
@@ -864,10 +865,12 @@ async function loadAllSheets() {
 
     // ── PROCESSAR ESTOQUE ──
     const estObjs = rowsToObjects(estRows).filter(r => r['Mês'] && r['Empreendimento']);
+    // Capitalizar mês: 'janeiro' → 'Janeiro'
+    const capMes = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
     LIVE_DATA.estoque = estObjs.map(r => ({
-      mes: r['Mês'],
+      mes: capMes(r['Mês']),
       emp: r['Empreendimento'],
-      un: parseInt(String(r['Unidades disponíveis']||'0').replace('.','')) || 0,
+      un: parseInt(String(r['Unidades disponíveis']||'0').replace(/\./g,'')) || 0,
       val: parsePtBR(r['Valor']),
     }));
 
@@ -2002,16 +2005,23 @@ function refilTables() {
 
 function vendasFiltradas() {
   if(MES_ATIVO === 'todos') return VENDAS;
-  return VENDAS.filter(v => v.mes === MES_ATIVO);
+  const norm = m => m ? m.trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+  return VENDAS.filter(v => norm(v.mes) === norm(MES_ATIVO));
 }
 
 function estoqueFiltrado() {
-  // Estoque mostra a posição do mês selecionado (ou último mês disponível = Maio)
-  const ref = MES_ATIVO === 'todos' ? 'Maio' : MES_ATIVO;
-  const dados = ESTOQUE.filter(e => e.mes === ref);
-  // Se não há dados para o mês (ex: Junho), mostrar Maio
-  return dados.length > 0 ? dados : ESTOQUE.filter(e => e.mes === 'Maio');
+  // Normalizar mês para comparação (planilha pode ter minúsculo ou maiúsculo)
+  const norm = m => m ? m.trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+  
+  const ref = MES_ATIVO === 'todos' ? 'maio' : norm(MES_ATIVO);
+  const dados = ESTOQUE.filter(e => norm(e.mes) === ref);
+  // Fallback para maio se mês não encontrado
+  if(dados.length > 0) return dados;
+  return ESTOQUE.filter(e => norm(e.mes) === 'maio');
 }
+
 
 function atualizarKPIs() {
   const vf = vendasFiltradas();
