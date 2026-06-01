@@ -544,7 +544,7 @@ td.c{text-align:center}
       <thead><tr>
         <th>Mês</th><th>Empreendimento</th><th>Unidade</th>
         <th style="text-align:right">Valor</th>
-        <th>Corretor</th><th>Imobiliária</th><th>Gerente</th><th>Motivo</th>
+        <th>Corretor</th><th>Imobiliária</th><th>Gerente</th><th>Motivo</th><th>Observação</th>
       </tr></thead>
       <tbody id="tb-perdidos"></tbody>
     </table></div>
@@ -1082,21 +1082,23 @@ async function loadAllSheets() {
 
     // ── PROCESSAR NEGÓCIOS PERDIDOS ──
     if(perdidosRows && perdidosRows.length > 1) {
-      const perdObjs = rowsToObjects(perdidosRows).filter(r => r['Mês'] && r['Empreendimento']);
       const capM = s => { if(!s) return ''; const m=String(s).split('/')[0].trim(); return m.charAt(0).toUpperCase()+m.slice(1).toLowerCase(); };
+      const perdObjs = rowsToObjects(perdidosRows).filter(r => r['Mês'] && r['Empreendimento'] && r['Mês'].trim() !== '');
       LIVE_DATA.perdidos = perdObjs.map(r => ({
-        mes:    capM(r['Mês']),
-        emp:    r['Empreendimento']?.trim() || '',
-        un:     r['Unidade']?.trim() || '',
-        val:    parsePtBR(r['Valor']),
+        mes:      capM(r['Mês']),
+        emp:      r['Empreendimento']?.trim() || '',
+        un:       r['Unidade']?.trim() || '',
+        val:      parsePtBR(r['Valor']),
         corretor: r['Corretor']?.trim() || '',
-        imob:   r['Imobiliária']?.trim() || '',
-        gerente: r['Gerente']?.trim() || '',
-        motivo: r['Motivo da perda']?.trim() || '',
+        imob:     r['Imobiliária']?.trim() || '',
+        gerente:  r['Gerente']?.trim() || '',
+        motivo:   r['Motivo da perda']?.trim() || '',
+        obs:      r['Observação']?.trim() || '',
       }));
-      console.log('✅ Perdidos carregados:', LIVE_DATA.perdidos.length, 'registros');
+      console.log('✅ Perdidos carregados:', LIVE_DATA.perdidos.length, 'registros', LIVE_DATA.perdidos[0]);
     } else {
       LIVE_DATA.perdidos = [];
+      console.warn('Perdidos: planilha vazia ou sem dados');
     }
 
     LAST_UPDATE = new Date();
@@ -1245,6 +1247,7 @@ async function loadAllSheets() {
     renderGerentesVisitas();
     renderFunil();
     renderPerdidos();
+    console.log('✅ Painel atualizado. Perdidos:', LIVE_DATA.perdidos?.length);
     refilTables();
 
     console.log('✅ Dados carregados do Google Sheets:', {
