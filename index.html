@@ -799,6 +799,16 @@ let LIVE_DATA = {};
 let LOADING = false;
 let LAST_UPDATE = null;
 
+// Parser de número formato pt-BR: "1.234.567,89" → 1234567.89
+function parsePtBR(val) {
+  if(!val && val !== 0) return 0;
+  const s = String(val).trim();
+  if(!s || s === '-') return 0;
+  // Remove pontos de milhar, troca vírgula decimal por ponto
+  const clean = s.replace(/\./g,'').replace(',','.');
+  return parseFloat(clean) || 0;
+}
+
 async function loadAllSheets() {
   if(LOADING) return;
   LOADING = true;
@@ -826,7 +836,7 @@ async function loadAllSheets() {
       tipo: r['Tipo'] || 'Venda',
       imob: r['Imobiliária'] || '',
       cor: r['Corretor'] || '',
-      val: parseFloat(String(r['Valor realizado']).replace(',','.')) || 0,
+      val: parsePtBR(r['Valor realizado']),
       gerente: r['Gerente'] || '',
     }));
 
@@ -852,8 +862,8 @@ async function loadAllSheets() {
     LIVE_DATA.estoque = estObjs.map(r => ({
       mes: r['Mês'],
       emp: r['Empreendimento'],
-      un: parseInt(r['Unidades disponíveis']) || 0,
-      val: parseFloat(String(r['Valor'] || '0').replace(',','.')) || 0,
+      un: parseInt(String(r['Unidades disponíveis']||'0').replace('.','')) || 0,
+      val: parsePtBR(r['Valor']),
     }));
 
     // ── PROCESSAR VISITAS ──
