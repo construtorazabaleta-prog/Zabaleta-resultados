@@ -1601,77 +1601,147 @@ function getFb() {
   return FEEDBACKS[m] || FEEDBACKS['todos'];
 }
 
+function getLiveFeedbacks() {
+  // Pega feedbacks dos dados ao vivo filtrados por mês
+  const vis = LIVE_DATA.visitas || [];
+  const sub = MES_ATIVO === 'todos' ? vis : vis.filter(v => v.mes === MES_ATIVO);
+
+  // Negócios gerados
+  const negocios = sub
+    .map(v => ({imob: v.imob, item: v.negocios}))
+    .filter(v => v.item && v.item.trim() && !['sem resposta','nan','-','0','1','2','3'].includes(v.item.trim().toLowerCase()) && v.item.trim().length > 5);
+
+  // Boas práticas
+  const boas = [...new Set(sub
+    .map(v => v.boas_praticas?.trim())
+    .filter(v => v && v.length > 10 && !['sem resposta','nan'].includes(v.toLowerCase()))
+  )];
+
+  // Melhorias
+  const melhorias = [...new Set(sub
+    .map(v => v.melhorias?.trim())
+    .filter(v => v && v.length > 10 && !['sem resposta','nan'].includes(v.toLowerCase()))
+  )];
+
+  // Comentários / insights
+  const insights = sub
+    .map(v => v.comentarios?.trim())
+    .filter(v => v && v.length > 10 && !['sem resposta','nan'].includes(v.toLowerCase()));
+
+  // Pautas
+  const pautas = {};
+  sub.forEach(v => {
+    const p = v.pauta || v['Pauta'] || '';
+    if(p && p.trim()) pautas[p.trim()] = (pautas[p.trim()]||0) + 1;
+  });
+  const pautaList = Object.entries(pautas).sort((a,b)=>b[1]-a[1]).map(([label,n])=>({label,n}));
+
+  return {negocios, boas, melhorias, insights, pautaList};
+}
+
 function renderFbContent() {
-  const fb = getFb();
   const el = document.getElementById('fb-content');
   if(!el) return;
+  const live = getLiveFeedbacks();
+  const fb = getFb(); // fallback para dados estáticos se necessário
+  const label = MES_ATIVO === 'todos' ? 'Jan–Mai' : MES_ATIVO;
 
   if(FB_TAB === 'negocios') {
-    const rows = fb.negocios_destaque.map(n => `
-      <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
-        <span style="font-size:11px;font-weight:600;color:var(--t2);min-width:100px">${n.imob}</span>
-        <span style="font-size:12px;color:var(--t)">${n.item}</span>
+    const hasLive = live.negocios.length > 0;
+    const rows = (hasLive ? live.negocios : fb.negocios_destaque).map(n => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:5px"></div>
+        <span style="font-size:11px;font-weight:600;color:var(--t2);min-width:90px;flex-shrink:0">${n.imob||''}</span>
+        <span style="font-size:12px;color:var(--t);line-height:1.5">${n.item||n.txt||''}</span>
       </div>`).join('');
     el.innerHTML = `
-      <div class="drawer-title" style="margin-bottom:4px">Negócios gerados nas visitas</div>
-      <div class="drawer-sub" style="margin-bottom:14px">Oportunidades identificadas e registradas pelos gerentes</div>
-      ${rows || '<div style="color:var(--t3);font-size:12px;padding:12px 0">Sem negócios registrados neste período.</div>'}`;
+      <div class="drawer-title" style="margin-bottom:4px">Negócios gerados nas visitas · ${label}</div>
+      <div class="drawer-sub" style="margin-bottom:14px">${hasLive ? live.negocios.length+' registros das planilhas' : 'dados de exemplo'}</div>
+      ${rows || '<div style="color:var(--t3);font-size:12px;padding:16px 0;text-align:center">Nenhum negócio registrado em '+label+'</div>'}`;
   }
 
   else if(FB_TAB === 'boas') {
-    const items = fb.boas_praticas.map((bp, i) => `
+    const hasLive = live.boas.length > 0;
+    const lista = hasLive ? live.boas : fb.boas_praticas;
+    const items = lista.map((bp, i) => `
       <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)">
         <div style="width:22px;height:22px;border-radius:50%;background:rgba(74,140,74,.15);border:1px solid rgba(74,140,74,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#7abf7a">${i+1}</div>
         <span style="font-size:12px;color:var(--t);line-height:1.5">${bp}</span>
       </div>`).join('');
     el.innerHTML = `
-      <div class="drawer-title" style="margin-bottom:4px">Boas práticas identificadas</div>
-      <div class="drawer-sub" style="margin-bottom:14px">O que funcionou e deve ser repetido nas visitas</div>
-      ${items}`;
+      <div class="drawer-title" style="margin-bottom:4px">Boas práticas identificadas · ${label}</div>
+      <div class="drawer-sub" style="margin-bottom:14px">${hasLive ? lista.length+' respostas reais' : 'dados de exemplo'}</div>
+      ${items || '<div style="color:var(--t3);font-size:12px;padding:16px 0;text-align:center">Nenhuma resposta em '+label+'</div>'}`;
   }
 
   else if(FB_TAB === 'melhorias') {
-    const cards = fb.melhorias.map(m => `
-      <div style="background:var(--bg4);border-radius:7px;padding:14px;border-left:3px solid ${m.cor}">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;color:var(--t)">${m.tema}</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:${m.cor}">${m.pct}%</div>
-        </div>
-        <div style="height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:10px;overflow:hidden">
-          <div style="height:100%;width:${m.pct}%;background:${m.cor};border-radius:2px"></div>
-        </div>
-        ${m.itens.map(i=>`<div style="font-size:11px;color:var(--t2);padding:3px 0;display:flex;gap:6px"><span style="color:${m.cor};flex-shrink:0">›</span>${i}</div>`).join('')}
-      </div>`).join('');
-    el.innerHTML = `
-      <div class="drawer-title" style="margin-bottom:4px">Pontos de melhoria levantados</div>
-      <div class="drawer-sub" style="margin-bottom:14px">Categorias de melhorias identificadas nas visitas — distribuição aproximada</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${cards}</div>`;
+    const hasLive = live.melhorias.length > 0;
+    if(hasLive) {
+      // Mostrar lista livre dos dados ao vivo
+      const items = live.melhorias.map(m => `
+        <div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+          <span style="color:var(--red);flex-shrink:0">›</span>
+          <span style="font-size:12px;color:var(--t);line-height:1.5">${m}</span>
+        </div>`).join('');
+      el.innerHTML = `
+        <div class="drawer-title" style="margin-bottom:4px">Pontos de melhoria · ${label}</div>
+        <div class="drawer-sub" style="margin-bottom:14px">${live.melhorias.length} respostas reais das planilhas</div>
+        ${items}`;
+    } else {
+      // Fallback estático categorizado
+      const cards = fb.melhorias.map(m => `
+        <div style="background:var(--bg4);border-radius:7px;padding:14px;border-left:3px solid ${m.cor}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div style="font-size:12px;font-weight:600;color:var(--t)">${m.tema}</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:${m.cor}">${m.pct}%</div>
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:8px;overflow:hidden">
+            <div style="height:100%;width:${m.pct}%;background:${m.cor};border-radius:2px"></div>
+          </div>
+          ${m.itens.map(i=>`<div style="font-size:11px;color:var(--t2);padding:3px 0;display:flex;gap:6px"><span style="color:${m.cor};flex-shrink:0">›</span>${i}</div>`).join('')}
+        </div>`).join('');
+      el.innerHTML = `
+        <div class="drawer-title" style="margin-bottom:4px">Pontos de melhoria · ${label}</div>
+        <div class="drawer-sub" style="margin-bottom:14px">Sem respostas em ${label} — exibindo consolidado</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${cards}</div>`;
+    }
   }
 
   else if(FB_TAB === 'insights') {
     const corTipo = {sugestao:'#C9943A',ideia:'#5a7a9a',acao:'#8B2E2E',oportunidade:'#4a8c4a'};
-    const items = fb.insights.map(ins => `
-      <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start">
-        <span style="background:${corTipo[ins.tipo]||'var(--bg4)'};color:#fff;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;margin-top:2px">${ins.tag}</span>
-        <span style="font-size:12px;color:var(--t);line-height:1.5">${ins.txt}</span>
-      </div>`).join('');
-    el.innerHTML = `
-      <div class="drawer-title" style="margin-bottom:4px">Insights & informações de mercado</div>
-      <div class="drawer-sub" style="margin-bottom:14px">Informações estratégicas captadas nas conversas com imobiliárias</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        ${Object.entries(corTipo).map(([k,c])=>`<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t3)"><div style="width:8px;height:8px;border-radius:2px;background:${c}"></div>${k}</div>`).join('')}
-      </div>
-      ${items}`;
+    const hasLive = live.insights.length > 0;
+    if(hasLive) {
+      const items = live.insights.map(txt => `
+        <div style="padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+          <span style="font-size:12px;color:var(--t);line-height:1.5">${txt}</span>
+        </div>`).join('');
+      el.innerHTML = `
+        <div class="drawer-title" style="margin-bottom:4px">Comentários & insights · ${label}</div>
+        <div class="drawer-sub" style="margin-bottom:14px">${live.insights.length} comentários das planilhas</div>
+        ${items}`;
+    } else {
+      const items = fb.insights.map(ins => `
+        <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start">
+          <span style="background:${corTipo[ins.tipo]||'var(--bg4)'};color:#fff;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;margin-top:2px">${ins.tag}</span>
+          <span style="font-size:12px;color:var(--t);line-height:1.5">${ins.txt}</span>
+        </div>`).join('');
+      el.innerHTML = `
+        <div class="drawer-title" style="margin-bottom:4px">Insights & mercado · ${label}</div>
+        <div class="drawer-sub" style="margin-bottom:14px">Sem comentários em ${label} — exibindo consolidado</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          ${Object.entries(corTipo).map(([k,c])=>`<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t3)"><div style="width:8px;height:8px;border-radius:2px;background:${c}"></div>${k}</div>`).join('')}
+        </div>${items}`;
+    }
   }
 
   else if(FB_TAB === 'pauta') {
-    const tipos = fb.pauta_tipos;
-    const max = Math.max(...tipos.map(t=>t.n));
-    const total = tipos.reduce((a,t)=>a+t.n,0);
-    const bars = tipos.map(t => `
+    const hasLive = live.pautaList.length > 0;
+    const tipos = hasLive ? live.pautaList : fb.pauta_tipos;
+    const max = Math.max(...tipos.map(t=>t.n), 1);
+    const total = tipos.reduce((a,t)=>a+t.n, 0);
+    const bars = tipos.slice(0,12).map(t => `
       <div class="pr" style="margin-bottom:8px">
-        <div class="pr-lbl" style="width:160px">${t.label}</div>
+        <div class="pr-lbl" style="width:180px">${t.label}</div>
         <div class="pr-track"><div class="pr-fill" style="width:${Math.round(t.n/max*100)}%"></div></div>
         <div style="display:flex;gap:8px;min-width:70px;justify-content:flex-end">
           <div class="pr-val">${t.n}</div>
@@ -1679,9 +1749,9 @@ function renderFbContent() {
         </div>
       </div>`).join('');
     el.innerHTML = `
-      <div class="drawer-title" style="margin-bottom:4px">Tipos de pauta das visitas</div>
-      <div class="drawer-sub" style="margin-bottom:14px">Distribuição das pautas registradas — ${total} visitas com pauta</div>
-      <div style="position:relative;height:220px;margin-bottom:20px"><canvas id="cPauta"></canvas></div>
+      <div class="drawer-title" style="margin-bottom:4px">Tipos de pauta · ${label}</div>
+      <div class="drawer-sub" style="margin-bottom:14px">${total} visitas com pauta registrada${hasLive?' — dados reais':''}</div>
+      <div style="position:relative;height:200px;margin-bottom:16px"><canvas id="cPauta"></canvas></div>
       ${bars}`;
     setTimeout(()=>{
       dc('cPauta');
@@ -2184,7 +2254,7 @@ function setMes(mes, btn) {
   atualizarKPIs();
   renderGerentes();
   renderGerentesVisitas();
-  if(openDrawers.has('vis-feedback')) renderFbContent();
+  if(openDrawers.has('vis-feedback')) { dc('cPauta'); renderFbContent(); }
   refilTables();
 }
 
