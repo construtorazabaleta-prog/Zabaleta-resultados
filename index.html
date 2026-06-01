@@ -480,34 +480,74 @@ td.c{text-align:center}
 <div class="divider"></div>
 
 <!-- ══════════════════════════════════════
-     3. DISTRATOS
+     3. NEGÓCIOS PERDIDOS
 ══════════════════════════════════════ -->
 <div class="sec-head">
   <span class="sec-num">3</span>
-  <span class="sec-title">Distratos</span>
-  <span class="sec-sub">Jan–Mai 2026</span>
+  <span class="sec-title">Negócios Perdidos</span>
+  <span class="sec-sub" id="perd-sub">Carregando...</span>
 </div>
 
 <div class="krow">
-  <div class="card green no-click">
-    <div class="klbl">Distratos no período</div>
-    <div class="kval">0</div>
-    <div class="ksub">Nenhuma ocorrência</div>
+  <div class="card red" onclick="toggle('perd-detail')">
+    <div class="klbl">Total perdidos</div>
+    <div class="kval" id="pk-total">—</div>
+    <div class="ksub" id="pk-total-s">carregando</div>
+    <span class="kchev">▼</span>
   </div>
-  <div class="card no-click">
-    <div class="klbl">Taxa de distrato</div>
-    <div class="kval">0,0<sub>%</sub></div>
-    <div class="ksub">sobre vendas realizadas</div>
+  <div class="card" onclick="toggle('perd-detail')">
+    <div class="klbl">Valor perdido</div>
+    <div class="kval" id="pk-valor">—</div>
+    <div class="ksub" id="pk-valor-s">total do período</div>
+    <span class="kchev">▼</span>
   </div>
-  <div class="card no-click">
-    <div class="klbl">Valor distratado</div>
-    <div class="kval">R$ 0</div>
-    <div class="ksub">nenhuma ocorrência</div>
-  </div>
-  <div class="card no-click">
+  <div class="card" onclick="toggle('perd-detail')">
     <div class="klbl">Motivo principal</div>
-    <div class="kval">—</div>
-    <div class="ksub">aguardando dados</div>
+    <div class="kval" id="pk-motivo" style="font-size:16px;line-height:1.2">—</div>
+    <div class="ksub" id="pk-motivo-s">mais frequente</div>
+    <span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('perd-detail')">
+    <div class="klbl">Imob. c/ mais perdas</div>
+    <div class="kval" id="pk-imob" style="font-size:16px;line-height:1.2">—</div>
+    <div class="ksub" id="pk-imob-s">do período</div>
+    <span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('perd-detail')">
+    <div class="klbl">Taxa de perda</div>
+    <div class="kval" id="pk-taxa">—</div>
+    <div class="ksub" id="pk-taxa-s">perdidos / total negócios</div>
+    <span class="kchev">▼</span>
+  </div>
+</div>
+
+<div class="drawer" id="perd-detail">
+  <div class="drawer-inner">
+    <div class="drawer-title">Negócios perdidos — análise completa</div>
+    <div class="drawer-sub" id="perd-drawer-sub">Dados do período</div>
+
+    <!-- RESUMO POR MOTIVO + POR EMP -->
+    <div class="g2" style="margin-bottom:20px">
+      <div>
+        <div class="drawer-title" style="font-size:12px;margin-bottom:10px">Por motivo da perda</div>
+        <div id="perd-motivos"></div>
+      </div>
+      <div>
+        <div class="drawer-title" style="font-size:12px;margin-bottom:10px">Por empreendimento</div>
+        <div id="perd-emps"></div>
+      </div>
+    </div>
+
+    <!-- TABELA COMPLETA -->
+    <div class="drawer-title" style="font-size:12px;margin-bottom:8px">Todos os registros</div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>Mês</th><th>Empreendimento</th><th>Unidade</th>
+        <th style="text-align:right">Valor</th>
+        <th>Corretor</th><th>Imobiliária</th><th>Gerente</th><th>Motivo</th>
+      </tr></thead>
+      <tbody id="tb-perdidos"></tbody>
+    </table></div>
   </div>
 </div>
 
@@ -913,7 +953,7 @@ async function loadAllSheets() {
   showLoadingOverlay(true);
 
   try {
-    const [visRows, vendRows, metaRows, estRows, npsRows, indRows, funilRows] = await Promise.all([
+    const [visRows, vendRows, metaRows, estRows, npsRows, indRows, funilRows, perdidosRows] = await Promise.all([
       fetchSheet(SHEETS.visitas),
       fetchSheet(SHEETS.vendas),
       fetchSheet(SHEETS.vendas, 'METAS_VENDA'),
@@ -921,6 +961,7 @@ async function loadAllSheets() {
       fetchSheet(SHEETS.nps, 'Página1'),
       fetchSheet(SHEETS.indicadores),
       fetchSheet(SHEETS.funil),
+      fetchSheet(SHEETS.perdidos),
     ]);
 
     // ── PROCESSAR VENDAS ──
@@ -1037,6 +1078,25 @@ async function loadAllSheets() {
         gerente: r['Gerente']?.trim() || '',
       }));
       console.log('✅ Funil carregado:', LIVE_DATA.funil.length, 'registros');
+    }
+
+    // ── PROCESSAR NEGÓCIOS PERDIDOS ──
+    if(perdidosRows && perdidosRows.length > 1) {
+      const perdObjs = rowsToObjects(perdidosRows).filter(r => r['Mês'] && r['Empreendimento']);
+      const capM = s => { if(!s) return ''; const m=String(s).split('/')[0].trim(); return m.charAt(0).toUpperCase()+m.slice(1).toLowerCase(); };
+      LIVE_DATA.perdidos = perdObjs.map(r => ({
+        mes:    capM(r['Mês']),
+        emp:    r['Empreendimento']?.trim() || '',
+        un:     r['Unidade']?.trim() || '',
+        val:    parsePtBR(r['Valor']),
+        corretor: r['Corretor']?.trim() || '',
+        imob:   r['Imobiliária']?.trim() || '',
+        gerente: r['Gerente']?.trim() || '',
+        motivo: r['Motivo da perda']?.trim() || '',
+      }));
+      console.log('✅ Perdidos carregados:', LIVE_DATA.perdidos.length, 'registros');
+    } else {
+      LIVE_DATA.perdidos = [];
     }
 
     LAST_UPDATE = new Date();
@@ -1184,6 +1244,7 @@ async function loadAllSheets() {
     renderGerentes();
     renderGerentesVisitas();
     renderFunil();
+    renderPerdidos();
     refilTables();
 
     console.log('✅ Dados carregados do Google Sheets:', {
@@ -1377,6 +1438,7 @@ function toggle(id){
     setTimeout(()=>{
       buildChart(id);
       if(id === 'vis-feedback') renderFbContent();
+      if(id === 'perd-detail') { renderPerdidos(); }
       if(id === 'funil-detail') {
         const funil = LIVE_DATA.funil || [];
         const sub = MES_ATIVO === 'todos' ? funil : funil.filter(f => f.mes === MES_ATIVO);
@@ -1884,6 +1946,116 @@ function renderGerentesVisitas() {
   });
 }
 
+function renderPerdidos() {
+  const perdidos = LIVE_DATA.perdidos || [];
+  const sub = MES_ATIVO === 'todos' ? perdidos : perdidos.filter(p => p.mes === MES_ATIVO);
+  const vendas = MES_ATIVO === 'todos' ? (LIVE_DATA.vendas||[]) : (LIVE_DATA.vendas||[]).filter(v => v.mes === MES_ATIVO);
+  const label = MES_ATIVO === 'todos' ? 'Jan–Mai' : MES_ATIVO;
+
+  const total     = sub.length;
+  const valorTotal = sub.reduce((a,p) => a+p.val, 0);
+  const taxa      = vendas.length + total > 0 ? Math.round(total / (vendas.length + total) * 100) : 0;
+
+  // Motivo mais frequente
+  const motivos = {};
+  sub.forEach(p => { if(p.motivo) motivos[p.motivo] = (motivos[p.motivo]||0)+1; });
+  const motivoSort = Object.entries(motivos).sort((a,b)=>b[1]-a[1]);
+  const motivoPrincipal = motivoSort[0]?.[0] || '—';
+
+  // Imob com mais perdas
+  const imobs = {};
+  sub.forEach(p => { if(p.imob) imobs[p.imob] = (imobs[p.imob]||0)+1; });
+  const imobSort = Object.entries(imobs).sort((a,b)=>b[1]-a[1]);
+  const imobPrincipal = imobSort[0]?.[0] || '—';
+
+  // Atualizar KPIs
+  const setEl = (id, val, s) => {
+    const e = document.getElementById(id); if(e) e.textContent = val;
+    const es = document.getElementById(id+'-s'); if(es && s!==undefined) es.textContent = s;
+  };
+
+  const subEl = document.getElementById('perd-sub');
+  if(subEl) subEl.textContent = total > 0 ? total+' registros · '+label : 'Nenhuma perda em '+label;
+
+  if(total === 0) {
+    setEl('pk-total', '0', 'nenhuma perda em '+label);
+    setEl('pk-valor', 'R$ 0', 'nenhuma ocorrência');
+    setEl('pk-motivo', '—', 'sem registros');
+    setEl('pk-imob', '—', 'sem registros');
+    setEl('pk-taxa', '0%', label);
+    // Limpar drawer
+    ['perd-motivos','perd-emps','tb-perdidos'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = `<div style="color:var(--t3);font-size:12px;padding:12px 0;text-align:center">Nenhum negócio perdido em ${label} 🎉</div>`;
+    });
+    return;
+  }
+
+  setEl('pk-total',  total, total+' negócios · '+label);
+  setEl('pk-valor',  fR(valorTotal), 'valor potencial perdido');
+  setEl('pk-motivo', motivoPrincipal.length > 18 ? motivoPrincipal.substring(0,18)+'…' : motivoPrincipal, motivoSort[0]?.[1]+' ocorrências');
+  setEl('pk-imob',   imobPrincipal, imobSort[0]?.[1]+' perdas');
+  setEl('pk-taxa',   taxa+'%', 'perdidos vs total negócios');
+
+  // Drawer — motivos
+  const elMotivos = document.getElementById('perd-motivos');
+  if(elMotivos) {
+    const maxM = motivoSort[0]?.[1] || 1;
+    elMotivos.innerHTML = motivoSort.map(([m, n]) => `
+      <div class="pr" style="margin-bottom:8px">
+        <div class="pr-lbl" style="width:140px;white-space:normal;line-height:1.3;font-size:11px">${m}</div>
+        <div class="pr-track"><div class="pr-fill" style="width:${Math.round(n/maxM*100)}%;background:#8B2E2E"></div></div>
+        <div style="display:flex;gap:6px;min-width:50px;justify-content:flex-end;align-items:center">
+          <div class="pr-val">${n}</div>
+          <div style="font-size:10px;color:var(--t3)">${Math.round(n/total*100)}%</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Drawer — empreendimentos
+  const elEmps = document.getElementById('perd-emps');
+  if(elEmps) {
+    const emps = {};
+    sub.forEach(p => { if(p.emp) emps[p.emp] = (emps[p.emp]||{n:0, val:0}); emps[p.emp].n++; emps[p.emp].val += p.val; });
+    const empSort = Object.entries(emps).sort((a,b)=>b[1].n-a[1].n);
+    const maxE = empSort[0]?.[1].n || 1;
+    const cores = {'Tower':'#8B2E2E','Office':'#C9943A','Res. Miguel Zabaleta':'#5a7a9a','Terceiros':'#4a8c4a'};
+    elEmps.innerHTML = empSort.map(([emp, d]) => `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:12px;color:var(--t)">${emp}</span>
+          <span style="font-size:11px;color:var(--t3)">${d.n} perdas · ${fR(d.val)}</span>
+        </div>
+        <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${Math.round(d.n/maxE*100)}%;background:${cores[emp]||'#8B2E2E'};border-radius:3px"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Tabela completa
+  const tb = document.getElementById('tb-perdidos');
+  if(tb) {
+    tb.innerHTML = '';
+    sub.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${p.mes}</td>
+        <td style="color:var(--t)">${p.emp}</td>
+        <td>${p.un||'—'}</td>
+        <td class="r">${p.val>0?fR(p.val):'<span style="color:var(--t3)">—</span>'}</td>
+        <td>${p.corretor||'—'}</td>
+        <td>${p.imob||'—'}</td>
+        <td>${p.gerente||'—'}</td>
+        <td><span class="tag tr2">${p.motivo||'—'}</span></td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  // Sub do drawer
+  const ds = document.getElementById('perd-drawer-sub');
+  if(ds) ds.textContent = total+' negócios perdidos · '+label+(valorTotal>0?' · '+fR(valorTotal)+' em valor':'');
+}
+
 function renderFunil() {
   const funil = LIVE_DATA.funil || [];
   const sub = MES_ATIVO === 'todos' ? funil : funil.filter(f => f.mes === MES_ATIVO);
@@ -1948,51 +2120,86 @@ function renderFunil() {
 
 function renderFunilVisual(etapas, totalGeral) {
   const container = document.getElementById('funil-visual');
-  if(!container || etapas.length === 0) return;
+  if(!container || etapas.length === 0) {
+    if(container) container.innerHTML = '<div style="color:var(--t3);text-align:center;padding:20px;font-size:12px">Sem dados para exibir o funil</div>';
+    return;
+  }
 
-  const CORES = ['#8B2E2E','#9a3535','#a83d3d','#b64545','#C9943A','#d4a24a','#5a7a9a','#4a8c4a','#3d7a3d'];
-  const maxN = etapas[0]?.n || 1;
-  const MIN_W = 30; // largura mínima %
-  const MAX_W = 96; // largura máxima %
+  const CORES = ['#8B2E2E','#a03535','#b84040','#C9943A','#c08030','#5a7a9a','#4a6a8a','#4a8c4a','#3d7a3d'];
+  const maxN = Math.max(...etapas.map(e=>e.n), 1);
 
-  const html = etapas.map((e, i) => {
-    const pct = Math.round((e.n / (totalGeral||1)) * 100);
-    const conv = i > 0 ? Math.round((e.n / etapas[i-1].n) * 100) : 100;
-    const w = MIN_W + ((e.n / maxN) * (MAX_W - MIN_W));
+  // SVG funil — cada etapa é um trapézio desenhado com pontos exatos
+  const W = 600;        // largura total do SVG
+  const H_STEP = 54;    // altura de cada etapa
+  const H_GAP = 18;     // espaço entre etapas (para label de conversão)
+  const MAX_HALF = 280; // metade da largura máxima (topo)
+  const MIN_HALF = 60;  // metade da largura mínima (última etapa)
+  const totalH = etapas.length * H_STEP + (etapas.length - 1) * H_GAP + 20;
+
+  // Calcular largura de cada etapa proporcional à quantidade
+  const halfWidths = etapas.map(e => MIN_HALF + ((e.n / maxN) * (MAX_HALF - MIN_HALF)));
+
+  let svgContent = '';
+  etapas.forEach((e, i) => {
+    const y = i * (H_STEP + H_GAP);
+    const topHalf  = halfWidths[i];
+    const botHalf  = i < etapas.length - 1 ? halfWidths[i+1] : halfWidths[i] * 0.85;
+    const cx = W / 2;
+
+    // Trapézio
+    const x1 = cx - topHalf, x2 = cx + topHalf; // topo
+    const x3 = cx + botHalf, x4 = cx - botHalf; // base
+
+    const pct = Math.round(e.n / (etapas[0].n || 1) * 100);
     const cor = CORES[i % CORES.length];
-    const isLast = i === etapas.length - 1;
+    const conv = i > 0 ? Math.round(e.n / etapas[i-1].n * 100) : null;
 
-    return `
-      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:3px">
-        <!-- Barra trapezoidal -->
-        <div style="
-          width:${w}%;
-          background:${cor};
-          padding:10px 16px;
-          display:flex;align-items:center;justify-content:space-between;
-          clip-path:polygon(${i===0?'0 0, 100% 0':((MAX_W-w)/(2*(MAX_W-MIN_W))*100).toFixed(1)+'% 0, '+(100-((MAX_W-w)/(2*(MAX_W-MIN_W))*100)).toFixed(1)+'% 0'}, ${isLast?'100% 100%, 0 100%':'calc(50% + '+(w*0.08).toFixed(0)+'px) 100%, calc(50% - '+(w*0.08).toFixed(0)+'px) 100%'});
-          min-height:44px;
-          border-radius:${i===0?'4px 4px 0 0':'0'};
-          transition:opacity .2s;
-          cursor:default;
-        " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-          <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px">${e.nome}</span>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#fff">${e.n}</span>
-            <span style="font-size:10px;color:rgba(255,255,255,.65)">${pct}%</span>
-          </div>
-        </div>
-        ${!isLast ? `<div style="font-size:9px;color:var(--t3);margin:2px 0;letter-spacing:.3px">conversão ${conv}%</div>` : ''}
-      </div>`;
-  }).join('');
+    // Trapézio preenchido
+    svgContent += `
+      <polygon points="${x1},${y} ${x2},${y} ${x3},${y+H_STEP} ${x4},${y+H_STEP}"
+        fill="${cor}" opacity="1" style="cursor:default;transition:opacity .15s"
+        onmouseover="this.setAttribute('opacity','0.8')"
+        onmouseout="this.setAttribute('opacity','1')"
+      />`;
+
+    // Nome da etapa (alinhado à esquerda dentro do trapézio)
+    const textX = cx - topHalf*0.82;
+    const textY = y + H_STEP/2 + 1;
+    svgContent += `<text x="${textX}" y="${textY}" dominant-baseline="middle"
+      font-family="Barlow Condensed, sans-serif" font-size="13" font-weight="700"
+      fill="white" letter-spacing="0.3">${e.nome}</text>`;
+
+    // Número (alinhado à direita)
+    svgContent += `<text x="${cx + topHalf*0.75}" y="${textY - 6}" dominant-baseline="middle"
+      font-family="Barlow Condensed, sans-serif" font-size="22" font-weight="800"
+      fill="white" text-anchor="middle">${e.n}</text>`;
+
+    // Percentual abaixo do número
+    svgContent += `<text x="${cx + topHalf*0.75}" y="${textY + 11}" dominant-baseline="middle"
+      font-family="Barlow, sans-serif" font-size="10"
+      fill="rgba(255,255,255,0.6)" text-anchor="middle">${pct}% do topo</text>`;
+
+    // Label de conversão entre etapas
+    if(conv !== null && i > 0) {
+      const labelY = y - H_GAP/2;
+      const convCor = conv >= 80 ? '#7abf7a' : conv >= 50 ? '#d4a855' : '#c07070';
+      svgContent += `<text x="${cx}" y="${labelY}" text-anchor="middle"
+        font-family="Barlow, sans-serif" font-size="10" fill="${convCor}">
+        ▼ ${conv}% de conversão da etapa anterior</text>`;
+    }
+  });
+
+  // Total geral na base
+  const baseY = totalH - 16;
+  const lastConv = etapas.length > 1 ? Math.round(etapas[etapas.length-1].n / etapas[0].n * 100) : 100;
+  svgContent += `<text x="${W/2}" y="${baseY}" text-anchor="middle"
+    font-family="Barlow, sans-serif" font-size="11" fill="#5e5c58">
+    ${totalGeral} no funil · conversão geral: ${lastConv}%</text>`;
 
   container.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;padding:0 8px">
-      ${html}
-      <div style="margin-top:12px;font-size:11px;color:var(--t3);text-align:center">
-        ${totalGeral} registros no funil · conversão total ${etapas.length>1?Math.round(etapas[etapas.length-1].n/etapas[0].n*100):100}%
-      </div>
-    </div>`;
+    <svg viewBox="0 0 ${W} ${totalH}" width="100%" style="max-width:600px;display:block;margin:0 auto;overflow:visible">
+      ${svgContent}
+    </svg>`;
 }
 
 function renderGerentes() {
@@ -2400,6 +2607,7 @@ function setMes(mes, btn) {
   renderGerentes();
   renderGerentesVisitas();
   renderFunil();
+  renderPerdidos();
   if(openDrawers.has('vis-feedback')) { dc('cPauta'); renderFbContent(); }
   refilTables();
 }
@@ -2605,6 +2813,7 @@ fillAll();
 renderGerentes();
 renderGerentesVisitas();
 renderFunil();
+renderPerdidos();
 atualizarKPIs();
 
 // Carregar dados ao vivo do Google Sheets
