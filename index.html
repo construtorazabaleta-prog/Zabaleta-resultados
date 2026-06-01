@@ -930,6 +930,55 @@ async function loadAllSheets() {
     LAST_UPDATE = new Date();
     updateLastUpdateBadge();
 
+    // Recalcular REALIZADO_MES e REALIZADO_EMP_MES com dados ao vivo
+    if(LIVE_DATA.vendas?.length) {
+      const mesesV = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho'];
+      // Reset
+      mesesV.forEach(m => {
+        REALIZADO_MES[m] = 0;
+        ['Tower','Office','Res. Miguel Zabaleta','Terceiros'].forEach(e => {
+          if(!REALIZADO_EMP_MES[e]) REALIZADO_EMP_MES[e] = {};
+          REALIZADO_EMP_MES[e][m] = 0;
+        });
+      });
+      // Somar
+      LIVE_DATA.vendas.forEach(v => {
+        const m = v.mes;
+        if(!mesesV.includes(m)) return;
+        REALIZADO_MES[m] = (REALIZADO_MES[m]||0) + v.val;
+        const emp = v.emp;
+        if(!REALIZADO_EMP_MES[emp]) REALIZADO_EMP_MES[emp] = {};
+        REALIZADO_EMP_MES[emp][m] = (REALIZADO_EMP_MES[emp][m]||0) + v.val;
+      });
+
+      // Recalcular dados por gerente de vendas
+      const gerNomes = ['Ricardo','Jonata','Lara'];
+      gerNomes.forEach((nome, gi) => {
+        const g = GERENTES[gi];
+        if(!g) return;
+        const subG = LIVE_DATA.vendas.filter(v =>
+          v.gerente && v.gerente.split(',').map(x=>x.trim()).includes(nome)
+        );
+        g.total_negocios = subG.length;
+        g.total_receita = subG.reduce((a,v)=>a+v.val,0);
+        // Por mês
+        const mesesG = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho'];
+        mesesG.forEach(m => {
+          const subM = subG.filter(v=>v.mes===m);
+          g.por_mes[m] = {negocios:subM.length, receita:subM.reduce((a,v)=>a+v.val,0)};
+        });
+        // Por empreendimento
+        const emps = ['Tower','Office','Res. Miguel Zabaleta','Terceiros'];
+        emps.forEach(emp => {
+          const subE = subG.filter(v=>v.emp===emp);
+          g.por_emp[emp] = {negocios:subE.length, receita:subE.reduce((a,v)=>a+v.val,0)};
+        });
+        g.ticket_medio = g.total_negocios > 0
+          ? Math.round(g.total_receita / subG.filter(v=>v.val>0).length) : 0;
+      });
+      console.log('✅ Vendas recalculadas:', REALIZADO_MES);
+    }
+
     // Recalcular VISITAS_MES com dados ao vivo
     if(LIVE_DATA.visitas?.length) {
       const mesesVis = ['todos','Janeiro','Fevereiro','Março','Abril','Maio','Junho'];
