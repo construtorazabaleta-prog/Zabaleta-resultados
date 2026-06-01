@@ -930,6 +930,76 @@ async function loadAllSheets() {
     LAST_UPDATE = new Date();
     updateLastUpdateBadge();
 
+    // Recalcular VISITAS_MES com dados ao vivo
+    if(LIVE_DATA.visitas?.length) {
+      const mesesVis = ['todos','Janeiro','Fevereiro','Março','Abril','Maio','Junho'];
+      mesesVis.forEach(mes => {
+        const sub = mes === 'todos'
+          ? LIVE_DATA.visitas
+          : LIVE_DATA.visitas.filter(v => v.mes === mes);
+        if(sub.length === 0 && mes !== 'todos') return;
+        const imobsUnicas = new Set(sub.map(v => v.imob).filter(Boolean)).size;
+        const totalCor = sub.reduce((a,v) => a + (v.corretores||0), 0);
+        const engMedio = sub.length
+          ? sub.reduce((a,v) => a + (v.engajamento||0), 0) / sub.length
+          : 0;
+        VISITAS_MES[mes] = {
+          vis: sub.length,
+          imobs: imobsUnicas,
+          cor: totalCor,
+          eng: Math.round(engMedio * 10) / 10,
+        };
+      });
+
+      // Recalcular TOP_IMOB_MES
+      const mesesTop = ['todos','Janeiro','Fevereiro','Março','Abril','Maio','Junho'];
+      mesesTop.forEach(mes => {
+        const sub = mes === 'todos'
+          ? LIVE_DATA.visitas
+          : LIVE_DATA.visitas.filter(v => v.mes === mes);
+        const cnt = {};
+        sub.forEach(v => { if(v.imob) cnt[v.imob] = (cnt[v.imob]||0) + 1; });
+        TOP_IMOB_MES[mes] = Object.entries(cnt)
+          .sort((a,b) => b[1]-a[1])
+          .slice(0,20)
+          .map(([i,v]) => ({i,v}));
+      });
+
+      // Recalcular dados por gerente de visitas
+      ['Ricardo','Jonata','Lara'].forEach((nome, gi) => {
+        const g = GERENTES_VISITAS[gi];
+        if(!g) return;
+        const mesesG = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho'];
+        const subTodo = LIVE_DATA.visitas.filter(v =>
+          v.gerente && v.gerente.split(',').map(x=>x.trim()).includes(nome)
+        );
+        g.total = {
+          vis: subTodo.length,
+          imobs: new Set(subTodo.map(v=>v.imob).filter(Boolean)).size,
+          cor: subTodo.reduce((a,v)=>a+(v.corretores||0),0),
+          eng: subTodo.length ? Math.round(subTodo.reduce((a,v)=>a+(v.engajamento||0),0)/subTodo.length*10)/10 : 0,
+        };
+        mesesG.forEach(mes => {
+          const subM = subTodo.filter(v => v.mes === mes);
+          const imobsSet = new Set(subM.map(v=>v.imob).filter(Boolean));
+          g.por_mes[mes] = {
+            vis: subM.length,
+            imobs: imobsSet.size,
+            cor: subM.reduce((a,v)=>a+(v.corretores||0),0),
+            eng: subM.length ? Math.round(subM.reduce((a,v)=>a+(v.engajamento||0),0)/subM.length*10)/10 : 0,
+          };
+          const cnt = {};
+          subM.forEach(v => { if(v.imob) cnt[v.imob]=(cnt[v.imob]||0)+1; });
+          g.top_imobs[mes] = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([i,v])=>({i,v}));
+        });
+        const cntAll = {};
+        subTodo.forEach(v => { if(v.imob) cntAll[v.imob]=(cntAll[v.imob]||0)+1; });
+        g.top_imobs['todos'] = Object.entries(cntAll).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([i,v])=>({i,v}));
+      });
+
+      console.log('✅ VISITAS_MES recalculado:', VISITAS_MES['todos']);
+    }
+
     // Recalcular tudo com dados ao vivo
     syncLiveToStatic();
     atualizarKPIs();
