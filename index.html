@@ -799,13 +799,17 @@ let LIVE_DATA = {};
 let LOADING = false;
 let LAST_UPDATE = null;
 
-// Parser de número formato pt-BR: "1.234.567,89" → 1234567.89
+// Parser de número formato pt-BR: "R$ 1.234.567,89" → 1234567.89
 function parsePtBR(val) {
   if(!val && val !== 0) return 0;
   const s = String(val).trim();
   if(!s || s === '-') return 0;
-  // Remove pontos de milhar, troca vírgula decimal por ponto
-  const clean = s.replace(/\./g,'').replace(',','.');
+  // Remove prefixos (R$, espaços), pontos de milhar, troca vírgula decimal por ponto
+  const clean = s
+    .replace(/R\$\s*/g, '')   // remove "R$ "
+    .replace(/\s/g, '')        // remove espaços restantes
+    .replace(/\.(?=\d{3})/g, '') // remove pontos de milhar (seguidos de 3 dígitos)
+    .replace(',', '.');         // vírgula decimal → ponto
   return parseFloat(clean) || 0;
 }
 
@@ -846,9 +850,10 @@ async function loadAllSheets() {
       metaRows.slice(1).forEach((row, i) => {
         if(i >= 6) return;
         const mes = mesesMeta[i];
-        const rmz    = parseFloat(String(row[1]||'0').replace(',','.')) * 1000 || 0;
-        const office = parseFloat(String(row[2]||'0').replace(',','.')) * 1000 || 0;
-        const tower  = parseFloat(String(row[3]||'0').replace(',','.')) * 1000 || 0;
+        // Metas já vêm em R$ (não em R$ mil) conforme planilha
+        const rmz    = parsePtBR(row[2]) || 0;  // Meta RMZ
+        const office = parsePtBR(row[3]) || 0;  // Meta Office  
+        const tower  = parsePtBR(row[4]) || 0;  // Meta Tower
         METAS.rmz[i]    = rmz;
         METAS.office[i] = office;
         METAS.tower[i]  = tower;
