@@ -660,30 +660,36 @@ td.c{text-align:center}
 
 <div class="divider"></div>
 
-<!-- ══════════════════════════════════════
-     5. FUNIL DE VENDAS
+<!-- ══════════ 5. FUNIL DE VENDAS
 ══════════════════════════════════════ -->
 <div class="sec-head">
   <span class="sec-num">5</span>
   <span class="sec-title">Funil de Vendas</span>
-  <span class="sec-sub">Aguardando dados</span>
+  <span class="sec-sub" id="funil-sub">Carregando...</span>
 </div>
-
 <div class="krow">
-  <div class="card no-click"><div class="klbl">Leads ativos</div><div class="kval">—</div><div class="ksub">sem dados ainda</div></div>
-  <div class="card no-click"><div class="klbl">Propostas</div><div class="kval">—</div><div class="ksub">sem dados ainda</div></div>
-  <div class="card no-click"><div class="klbl">Conversão</div><div class="kval">—</div><div class="ksub">aguardando planilha</div></div>
-  <div class="card no-click"><div class="klbl">Tempo médio ciclo</div><div class="kval">—</div><div class="ksub">aguardando planilha</div></div>
-  <div class="card no-click"><div class="klbl">Perda na etapa</div><div class="kval">—</div><div class="ksub">aguardando planilha</div></div>
+  <div class="card no-click"><div class="klbl">Novo lead</div><div class="kval" id="fk-prosp">—</div><div class="ksub" id="fk-prosp-s">carregando</div></div>
+  <div class="card no-click"><div class="klbl">Visita feita</div><div class="kval" id="fk-visita">—</div><div class="ksub" id="fk-visita-s">carregando</div></div>
+  <div class="card no-click"><div class="klbl">Follow Up</div><div class="kval" id="fk-follow">—</div><div class="ksub" id="fk-follow-s">carregando</div></div>
+  <div class="card no-click"><div class="klbl">Proposta</div><div class="kval" id="fk-proposta">—</div><div class="ksub" id="fk-proposta-s">carregando</div></div>
+  <div class="card red" onclick="toggle('funil-detail')"><div class="klbl">Total no funil</div><div class="kval" id="fk-total">—</div><div class="ksub" id="fk-total-s">carregando</div><span class="kchev">▼</span></div>
 </div>
+<div class="drawer" id="funil-detail">
+  <div class="drawer-inner">
+    <div class="drawer-title">Funil de vendas</div>
+    <div class="drawer-sub" id="funil-drawer-sub">Dados do período</div>
 
-<div class="empty" style="margin-bottom:0">
-  <span class="empty-icon">🔻</span>
-  <div style="font-size:13px;font-weight:500;color:var(--t2);margin-bottom:5px">Planilha de funil sem registros no período</div>
-  <div style="font-size:11px;color:var(--t3)">Preencha <b style="color:var(--t2)">Funil_de_vendas_-_BI.ods</b> com Mês, Etapa, Empreendimento, Unidade e Valor</div>
+    <!-- FUNIL VISUAL -->
+    <div id="funil-visual" style="margin:20px 0 24px"></div>
+
+    <!-- TABELA DETALHE -->
+    <div class="drawer-title" style="margin-bottom:8px;font-size:12px">Registros detalhados</div>
+    <div class="tw"><table>
+      <thead><tr><th>Mês</th><th>Etapa</th><th>Empreendimento</th><th>Unidade</th><th>Corretor</th><th>Imobiliária</th><th>Gerente</th></tr></thead>
+      <tbody id="tb-funil"></tbody>
+    </table></div>
+  </div>
 </div>
-
-<div class="divider"></div>
 
 <!-- ══════════════════════════════════════
      6. CUSTOS COMERCIAIS
@@ -1371,6 +1377,15 @@ function toggle(id){
     setTimeout(()=>{
       buildChart(id);
       if(id === 'vis-feedback') renderFbContent();
+      if(id === 'funil-detail') {
+        const funil = LIVE_DATA.funil || [];
+        const sub = MES_ATIVO === 'todos' ? funil : funil.filter(f => f.mes === MES_ATIVO);
+        const ORDEM = ['Novo lead','Fazer visita','Visita feita','Follow Up 1','Follow Up 2','Follow Up 3','Proposta','Negociação','Venda'];
+        const cnt = {};
+        sub.forEach(f => { if(f.etapa) cnt[f.etapa]=(cnt[f.etapa]||0)+1; });
+        const etapas = [...ORDEM.filter(e=>cnt[e]),...Object.keys(cnt).filter(e=>!ORDEM.includes(e))].map(e=>({nome:e,n:cnt[e]}));
+        renderFunilVisual(etapas, sub.length);
+      }
     },60);
   }
 }
@@ -1874,30 +1889,40 @@ function renderFunil() {
   const sub = MES_ATIVO === 'todos' ? funil : funil.filter(f => f.mes === MES_ATIVO);
   const label = MES_ATIVO === 'todos' ? 'Jan–Mai' : MES_ATIVO;
 
-  // Etapas
-  const etapas = {};
-  sub.forEach(f => { etapas[f.etapa] = (etapas[f.etapa]||0)+1; });
+  // Contar por etapa — ordem natural do funil
+  const ORDEM_ETAPAS = ['Novo lead','Fazer visita','Visita feita','Follow Up 1','Follow Up 2','Follow Up 3','Proposta','Negociação','Venda'];
+  const etapasCount = {};
+  sub.forEach(f => { if(f.etapa) etapasCount[f.etapa] = (etapasCount[f.etapa]||0)+1; });
 
-  const get = label => sub.filter(f => f.etapa && f.etapa.toLowerCase().includes(label.toLowerCase())).length;
-  const prosp   = sub.filter(f => f.etapa && (f.etapa.toLowerCase().includes('lead') || f.etapa.toLowerCase().includes('prospec'))).length;
-  const visita  = sub.filter(f => f.etapa && f.etapa.toLowerCase().includes('visita')).length;
-  const follow  = sub.filter(f => f.etapa && f.etapa.toLowerCase().includes('follow')).length;
-  const proposta= sub.filter(f => f.etapa && (f.etapa.toLowerCase().includes('proposta') || f.etapa.toLowerCase().includes('negoci'))).length;
-  const total   = sub.length;
+  // Ordenar etapas: primeiro as da ordem natural, depois o resto
+  const etapasOrdenadas = [
+    ...ORDEM_ETAPAS.filter(e => etapasCount[e]),
+    ...Object.keys(etapasCount).filter(e => !ORDEM_ETAPAS.includes(e))
+  ].map(e => ({nome: e, n: etapasCount[e]}));
 
-  // Atualizar KPIs
-  const set = (id, val, sub) => {
+  // KPIs rápidos
+  const prosp    = sub.filter(f => f.etapa && (f.etapa.toLowerCase().includes('lead') || f.etapa.toLowerCase().includes('novo'))).length;
+  const visita   = sub.filter(f => f.etapa && f.etapa.toLowerCase().includes('visita')).length;
+  const follow   = sub.filter(f => f.etapa && f.etapa.toLowerCase().includes('follow')).length;
+  const proposta = sub.filter(f => f.etapa && (f.etapa.toLowerCase().includes('proposta') || f.etapa.toLowerCase().includes('negoci'))).length;
+  const total    = sub.length;
+
+  const setEl = (id, val, s) => {
     const e = document.getElementById(id); if(e) e.textContent = val;
-    const es = document.getElementById(id+'-s'); if(es) es.textContent = sub;
+    const es = document.getElementById(id+'-s'); if(es) es.textContent = s||'';
   };
-  set('fk-prosp',   prosp,    prosp+' contatos');
-  set('fk-visita',  visita,   visita+' leads');
-  set('fk-follow',  follow,   follow+' leads');
-  set('fk-proposta',proposta, proposta+' leads');
-  set('fk-total',   total,    label+' · '+Object.keys(etapas).length+' etapas');
+  setEl('fk-prosp',    prosp,    prosp+' registros');
+  setEl('fk-visita',   visita,   visita+' registros');
+  setEl('fk-follow',   follow,   follow+' registros');
+  setEl('fk-proposta', proposta, proposta+' registros');
+  setEl('fk-total',    total,    label+' · '+etapasOrdenadas.length+' etapas');
+  const subEl = document.getElementById('funil-sub');
+  if(subEl) subEl.textContent = total > 0 ? total+' registros · '+label : 'Sem dados em '+label;
 
-  const sub2 = document.getElementById('funil-sub');
-  if(sub2) sub2.textContent = total > 0 ? total+' registros · '+label : 'Sem dados em '+label;
+  // Funil visual (só se drawer aberto)
+  if(openDrawers.has('funil-detail')) {
+    renderFunilVisual(etapasOrdenadas, total);
+  }
 
   // Tabela
   const tb = document.getElementById('tb-funil');
@@ -1919,31 +1944,55 @@ function renderFunil() {
       });
     }
   }
+}
 
-  // Gráficos (só se drawer aberto)
-  if(openDrawers.has('funil-detail')) {
-    setTimeout(()=>{
-      dc('cFunilEtapa'); dc('cFunilEmp');
-      const etapasSort = Object.entries(etapas).sort((a,b)=>b[1]-a[1]);
-      if(etapasSort.length > 0) {
-        CHS['cFunilEtapa'] = new Chart(document.getElementById('cFunilEtapa'),{
-          type:'doughnut',
-          data:{labels:etapasSort.map(e=>e[0]),datasets:[{data:etapasSort.map(e=>e[1]),backgroundColor:['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a','rgba(139,46,46,.4)','rgba(201,148,58,.4)'],borderWidth:0,hoverOffset:4}]},
-          options:{responsive:true,maintainAspectRatio:false,cutout:'50%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}},tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490'}}}
-        });
-      }
-      const empCount = {};
-      sub.forEach(f=>{ if(f.emp) empCount[f.emp]=(empCount[f.emp]||0)+1; });
-      const empSort = Object.entries(empCount).sort((a,b)=>b[1]-a[1]);
-      if(empSort.length > 0) {
-        CHS['cFunilEmp'] = new Chart(document.getElementById('cFunilEmp'),{
-          type:'bar',
-          data:{labels:empSort.map(e=>e[0]),datasets:[{data:empSort.map(e=>e[1]),backgroundColor:['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a'],borderRadius:4}]},
-          options:{...cdo,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}},y:{grid:{display:false},ticks:{color:'#9a9490',font:{size:11}}}}}
-        });
-      }
-    },60);
-  }
+function renderFunilVisual(etapas, totalGeral) {
+  const container = document.getElementById('funil-visual');
+  if(!container || etapas.length === 0) return;
+
+  const CORES = ['#8B2E2E','#9a3535','#a83d3d','#b64545','#C9943A','#d4a24a','#5a7a9a','#4a8c4a','#3d7a3d'];
+  const maxN = etapas[0]?.n || 1;
+  const MIN_W = 30; // largura mínima %
+  const MAX_W = 96; // largura máxima %
+
+  const html = etapas.map((e, i) => {
+    const pct = Math.round((e.n / (totalGeral||1)) * 100);
+    const conv = i > 0 ? Math.round((e.n / etapas[i-1].n) * 100) : 100;
+    const w = MIN_W + ((e.n / maxN) * (MAX_W - MIN_W));
+    const cor = CORES[i % CORES.length];
+    const isLast = i === etapas.length - 1;
+
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:3px">
+        <!-- Barra trapezoidal -->
+        <div style="
+          width:${w}%;
+          background:${cor};
+          padding:10px 16px;
+          display:flex;align-items:center;justify-content:space-between;
+          clip-path:polygon(${i===0?'0 0, 100% 0':((MAX_W-w)/(2*(MAX_W-MIN_W))*100).toFixed(1)+'% 0, '+(100-((MAX_W-w)/(2*(MAX_W-MIN_W))*100)).toFixed(1)+'% 0'}, ${isLast?'100% 100%, 0 100%':'calc(50% + '+(w*0.08).toFixed(0)+'px) 100%, calc(50% - '+(w*0.08).toFixed(0)+'px) 100%'});
+          min-height:44px;
+          border-radius:${i===0?'4px 4px 0 0':'0'};
+          transition:opacity .2s;
+          cursor:default;
+        " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px">${e.nome}</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:#fff">${e.n}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.65)">${pct}%</span>
+          </div>
+        </div>
+        ${!isLast ? `<div style="font-size:9px;color:var(--t3);margin:2px 0;letter-spacing:.3px">conversão ${conv}%</div>` : ''}
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;padding:0 8px">
+      ${html}
+      <div style="margin-top:12px;font-size:11px;color:var(--t3);text-align:center">
+        ${totalGeral} registros no funil · conversão total ${etapas.length>1?Math.round(etapas[etapas.length-1].n/etapas[0].n*100):100}%
+      </div>
+    </div>`;
 }
 
 function renderGerentes() {
