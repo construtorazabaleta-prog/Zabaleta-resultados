@@ -907,13 +907,14 @@ async function loadAllSheets() {
   showLoadingOverlay(true);
 
   try {
-    const [visRows, vendRows, metaRows, estRows, npsRows, indRows] = await Promise.all([
+    const [visRows, vendRows, metaRows, estRows, npsRows, indRows, funilRows] = await Promise.all([
       fetchSheet(SHEETS.visitas),
       fetchSheet(SHEETS.vendas),
       fetchSheet(SHEETS.vendas, 'METAS_VENDA'),
       fetchSheet(SHEETS.estoque, 'Sheet1'),
       fetchSheet(SHEETS.nps, 'Página1'),
       fetchSheet(SHEETS.indicadores),
+      fetchSheet(SHEETS.funil),
     ]);
 
     // ── PROCESSAR VENDAS ──
@@ -1014,6 +1015,23 @@ async function loadAllSheets() {
       gerente: r['Gerente'] || '',
       corretor: r['Corretor'] || '',
     }));
+
+    // ── PROCESSAR FUNIL ──
+    if(funilRows && funilRows.length > 1) {
+      const funilObjs = rowsToObjects(funilRows).filter(r => r['Mês'] && r['Etapa funil']);
+      const capM = s => { if(!s) return ''; const m=String(s).split('/')[0].trim(); return m.charAt(0).toUpperCase()+m.slice(1).toLowerCase(); };
+      LIVE_DATA.funil = funilObjs.map(r => ({
+        mes:   capM(r['Mês']),
+        etapa: r['Etapa funil']?.trim() || '',
+        emp:   r['Empreendimento']?.trim() || '',
+        un:    r['Unidade']?.trim() || '',
+        val:   parsePtBR(r['Valor']),
+        corretor: r['Corretor']?.trim() || '',
+        imob:  r['Imobiliária']?.trim() || '',
+        gerente: r['Gerente']?.trim() || '',
+      }));
+      console.log('✅ Funil carregado:', LIVE_DATA.funil.length, 'registros');
+    }
 
     LAST_UPDATE = new Date();
     updateLastUpdateBadge();
@@ -1159,6 +1177,7 @@ async function loadAllSheets() {
     atualizarKPIs();
     renderGerentes();
     renderGerentesVisitas();
+    renderFunil();
     refilTables();
 
     console.log('✅ Dados carregados do Google Sheets:', {
@@ -1850,6 +1869,83 @@ function renderGerentesVisitas() {
   });
 }
 
+function renderFunil() {
+  const funil = LIVE_DATA.funil || [];
+  const sub = MES_ATIVO === 'todos' ? funil : funil.filter(f => f.mes === MES_ATIVO);
+  const label = MES_ATIVO === 'todos' ? 'Jan–Mai' : MES_ATIVO;
+
+  // Etapas
+  const etapas = {};
+  sub.forEach(f => { etapas[f.etapa] = (etapas[f.etapa]||0)+1; });
+
+  const get = label => sub.filter(f => f.etapa && f.etapa.toLowerCase().includes(label.toLowerCase())).length;
+  const prosp   = sub.filter(f => f.etapa && (f.etapa.toLowerCase().includes('lead') || f.etapa.toLowerCase().includes('prospec'))).length;
+  const visita  = sub.filter(f => f.etapa && f.etapa.toLowerCase().includes('visita')).length;
+  const follow  = sub.filter(f => f.etapa && f.etapa.toLowerCase().includes('follow')).length;
+  const proposta= sub.filter(f => f.etapa && (f.etapa.toLowerCase().includes('proposta') || f.etapa.toLowerCase().includes('negoci'))).length;
+  const total   = sub.length;
+
+  // Atualizar KPIs
+  const set = (id, val, sub) => {
+    const e = document.getElementById(id); if(e) e.textContent = val;
+    const es = document.getElementById(id+'-s'); if(es) es.textContent = sub;
+  };
+  set('fk-prosp',   prosp,    prosp+' contatos');
+  set('fk-visita',  visita,   visita+' leads');
+  set('fk-follow',  follow,   follow+' leads');
+  set('fk-proposta',proposta, proposta+' leads');
+  set('fk-total',   total,    label+' · '+Object.keys(etapas).length+' etapas');
+
+  const sub2 = document.getElementById('funil-sub');
+  if(sub2) sub2.textContent = total > 0 ? total+' registros · '+label : 'Sem dados em '+label;
+
+  // Tabela
+  const tb = document.getElementById('tb-funil');
+  if(tb) {
+    tb.innerHTML = '';
+    if(sub.length === 0) {
+      tb.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">Nenhum registro no funil em ${label}</td></tr>`;
+    } else {
+      sub.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${f.mes}</td>
+          <td><span class="tag tb">${f.etapa}</span></td>
+          <td style="color:var(--t)">${f.emp}</td>
+          <td>${f.un||'—'}</td>
+          <td>${f.corretor||'—'}</td>
+          <td>${f.imob||'—'}</td>
+          <td>${f.gerente||'—'}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+  }
+
+  // Gráficos (só se drawer aberto)
+  if(openDrawers.has('funil-detail')) {
+    setTimeout(()=>{
+      dc('cFunilEtapa'); dc('cFunilEmp');
+      const etapasSort = Object.entries(etapas).sort((a,b)=>b[1]-a[1]);
+      if(etapasSort.length > 0) {
+        CHS['cFunilEtapa'] = new Chart(document.getElementById('cFunilEtapa'),{
+          type:'doughnut',
+          data:{labels:etapasSort.map(e=>e[0]),datasets:[{data:etapasSort.map(e=>e[1]),backgroundColor:['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a','rgba(139,46,46,.4)','rgba(201,148,58,.4)'],borderWidth:0,hoverOffset:4}]},
+          options:{responsive:true,maintainAspectRatio:false,cutout:'50%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}},tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490'}}}
+        });
+      }
+      const empCount = {};
+      sub.forEach(f=>{ if(f.emp) empCount[f.emp]=(empCount[f.emp]||0)+1; });
+      const empSort = Object.entries(empCount).sort((a,b)=>b[1]-a[1]);
+      if(empSort.length > 0) {
+        CHS['cFunilEmp'] = new Chart(document.getElementById('cFunilEmp'),{
+          type:'bar',
+          data:{labels:empSort.map(e=>e[0]),datasets:[{data:empSort.map(e=>e[1]),backgroundColor:['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a'],borderRadius:4}]},
+          options:{...cdo,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}},y:{grid:{display:false},ticks:{color:'#9a9490',font:{size:11}}}}}
+        });
+      }
+    },60);
+  }
+}
+
 function renderGerentes() {
   const gc = document.getElementById('gerentes-cards');
   if(!gc) return;
@@ -2254,6 +2350,7 @@ function setMes(mes, btn) {
   atualizarKPIs();
   renderGerentes();
   renderGerentesVisitas();
+  renderFunil();
   if(openDrawers.has('vis-feedback')) { dc('cPauta'); renderFbContent(); }
   refilTables();
 }
@@ -2458,6 +2555,7 @@ function setKPI(id, val, sub) {
 fillAll();
 renderGerentes();
 renderGerentesVisitas();
+renderFunil();
 atualizarKPIs();
 
 // Carregar dados ao vivo do Google Sheets
