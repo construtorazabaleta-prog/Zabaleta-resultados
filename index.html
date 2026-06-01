@@ -805,10 +805,11 @@ async function loadAllSheets() {
   showLoadingOverlay(true);
 
   try {
-    const [visRows, vendRows, estRows, npsRows, indRows] = await Promise.all([
+    const [visRows, vendRows, metaRows, estRows, npsRows, indRows] = await Promise.all([
       fetchSheet(SHEETS.visitas),
       fetchSheet(SHEETS.vendas),
-      fetchSheet(SHEETS.estoque),
+      fetchSheet(SHEETS.vendas, 'METAS_VENDA'),
+      fetchSheet(SHEETS.estoque, 'Sheet1'),
       fetchSheet(SHEETS.nps, 'Página1'),
       fetchSheet(SHEETS.indicadores),
     ]);
@@ -828,6 +829,23 @@ async function loadAllSheets() {
       val: parseFloat(String(r['Valor realizado']).replace(',','.')) || 0,
       gerente: r['Gerente'] || '',
     }));
+
+    // ── PROCESSAR METAS ──
+    if(metaRows && metaRows.length > 1) {
+      const mesesMeta = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho'];
+      metaRows.slice(1).forEach((row, i) => {
+        if(i >= 6) return;
+        const mes = mesesMeta[i];
+        const rmz    = parseFloat(String(row[1]||'0').replace(',','.')) * 1000 || 0;
+        const office = parseFloat(String(row[2]||'0').replace(',','.')) * 1000 || 0;
+        const tower  = parseFloat(String(row[3]||'0').replace(',','.')) * 1000 || 0;
+        METAS.rmz[i]    = rmz;
+        METAS.office[i] = office;
+        METAS.tower[i]  = tower;
+        METAS.total[i]  = rmz + office + tower;
+      });
+      console.log('✅ Metas carregadas:', METAS.total);
+    }
 
     // ── PROCESSAR ESTOQUE ──
     const estObjs = rowsToObjects(estRows).filter(r => r['Mês'] && r['Empreendimento']);
@@ -1077,7 +1095,10 @@ function toggle(id){
     openDrawers.add(id);
     if(card) card.classList.add('active');
     refilTables();
-    setTimeout(()=>buildChart(id),60);
+    setTimeout(()=>{
+      buildChart(id);
+      if(id === 'vis-feedback') renderFbContent();
+    },60);
   }
 }
 
@@ -1424,16 +1445,8 @@ function renderFbContent() {
   }
 }
 
-// Chamar quando o drawer de feedback abre
-const _oldBuildChart = buildChart;
-const buildChartOrig = buildChart;
-
-function buildChart(id) {
-  buildChartOrig(id);
-  if(id === 'vis-feedback') {
-    renderFbContent();
-  }
-}
+// Chamar renderFbContent quando drawer de feedback abre
+// (integrado direto no toggle, sem override de buildChart)
 
 function renderGerentesVisitas() {
   const gc = document.getElementById('gerentes-vis-cards');
