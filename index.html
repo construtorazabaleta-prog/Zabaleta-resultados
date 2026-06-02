@@ -166,11 +166,20 @@ td.c{text-align:center}
     <button class="mod-tab" id="tab-rh" onclick="switchTab('rh')">RH</button>
   </div>
 
-  <!-- FILTRO DE MÊS — só aparece no comercial -->
-  <div id="filtro-mes-wrap" style="display:flex;align-items:center;gap:6px;margin-left:20px">
-    <span style="font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap">Mês</span>
-    <div id="mes-filters" style="display:flex;gap:3px;flex-wrap:nowrap">
-      <button class="mf active">Todos</button>
+  <!-- FILTRO ANO + MÊS — só aparece no comercial -->
+  <div id="filtro-mes-wrap" style="display:flex;align-items:center;gap:10px;margin-left:20px">
+    <div style="display:flex;align-items:center;gap:4px">
+      <span style="font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap">Ano</span>
+      <div id="ano-filters" style="display:flex;gap:3px">
+        <button class="mf active" id="ano-todos">Todos</button>
+      </div>
+    </div>
+    <div style="width:1px;height:16px;background:var(--b)"></div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <span style="font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap">Mês</span>
+      <div id="mes-filters" style="display:flex;gap:3px">
+        <button class="mf active" id="mes-todos">Todos</button>
+      </div>
     </div>
   </div>
 
@@ -2763,309 +2772,99 @@ let LIVE_RH_RH_loaded = false;
 // LIVE_RH gerenciado pelo módulo RH;
 
 // Construir filtro de mês dinamicamente com dados reais
+// ── FILTRO ANO + MÊS ──
+let ANO_ATIVO = 'todos';
+
+const MESES_ORDEM = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES_ABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
 function buildMesesFilter() {
+  // Coletar todos os meses únicos dos dados ao vivo
+  const anosSet = new Set();
   const mesesSet = new Set();
-  if(LIVE_DATA.vendas) LIVE_DATA.vendas.forEach(v=>{if(v.mes) mesesSet.add(v.mes);});
-  if(LIVE_DATA.estoque) LIVE_DATA.estoque.forEach(e=>{if(e.mes) mesesSet.add(e.mes);});
-  if(LIVE_DATA.visitas) LIVE_DATA.visitas.forEach(v=>{if(v.mes) mesesSet.add(v.mes);});
 
-  const ordem=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const meses = [...mesesSet].sort((a,b)=>ordem.indexOf(a)-ordem.indexOf(b));
+  const fontes = [
+    ...(LIVE_DATA.vendas||[]),
+    ...(LIVE_DATA.estoque||[]),
+    ...(LIVE_DATA.visitas||[]),
+  ];
 
-  const nav = document.getElementById('mes-filters');
-  nav.innerHTML = '';
-  const btnTodos = document.createElement('button');
-  btnTodos.className = 'mf active';
-  btnTodos.textContent = 'Todos';
-  btnTodos.onclick = () => setMes('todos', btnTodos);
-  nav.appendChild(btnTodos);
-
-  meses.forEach(m=>{
-    const btn=document.createElement('button');
-    btn.className='mf';
-    btn.textContent=m.substring(0,3);
-    btn.title=m;
-    btn.onclick=()=>setMes(m,btn);
-    nav.appendChild(btn);
-  });
-}
-
-function fillAll(){
-  // Estoque
-  const te=document.getElementById('tb-est-all');
-  ESTOQUE.forEach(e=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${e.mes}</td><td style="color:var(--t)">${e.emp}</td><td class="r"><b style="font-family:'Barlow Condensed';font-size:15px">${e.un}</b></td><td class="r">${fR(e.val)}</td>`;te.appendChild(tr);});
-  // Vendas
-  const tv=document.getElementById('tb-vend-all');
-  VENDAS.forEach(v=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${v.mes}</td><td style="color:var(--t)">${v.emp}</td><td>${v.un}</td><td><span class="tag ${v.tipo==='Venda'?'tg':'tb'}">${v.tipo==='Venda'?'Venda':'Cessão'}</span></td><td>${v.imob}</td><td>${v.cor}</td><td class="r">${v.val>0?fR(v.val):'<span style="color:var(--t3)">–</span>'}</td>`;tv.appendChild(tr);});
-  // Tabelas por empreendimento
-  ['Tower','Office','Res. Miguel Zabaleta','Terceiros'].forEach(emp => {
-    const idMap = {'Tower':'tb-vend-tower','Office':'tb-vend-office','Res. Miguel Zabaleta':'tb-vend-rmz','Terceiros':'tb-vend-terc'};
-    const tb = document.getElementById(idMap[emp]);
-    if(tb && !tb.innerHTML) {
-      const sub = vendasFiltradas().filter(v=>v.emp===emp);
-      if(sub.length===0) {
-        tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">Nenhuma venda de ${emp} no período</td></tr>`;
-      } else {
-        sub.forEach(v=>{
-          const tr=document.createElement('tr');
-          tr.innerHTML=`<td>${v.mes}</td><td>${v.un}</td>
-            <td><span class="tag ${v.tipo==='Venda'?'tg':'tb'}">${v.tipo==='Venda'?'Venda':'Cessão'}</span></td>
-            <td>${v.imob}</td><td>${v.cor}</td><td>${v.gerente}</td>
-            <td class="r">${v.val>0?fR(v.val):'<span style="color:var(--t3)">–</span>'}</td>`;
-          tb.appendChild(tr);
-        });
-      }
-    }
+  fontes.forEach(r => {
+    if(!r.mes) return;
+    const m = r.mes; // ex: "Janeiro", "Fevereiro"
+    mesesSet.add(m);
   });
 
-  // Visitas destaque
-  const tvis=document.getElementById('tb-vis-negs');
-  VIS_DEST.forEach(v=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${v.mes}</td><td style="color:var(--t);font-weight:500">${v.imob}</td><td>${v.ger}</td><td class="r">${v.cor}</td><td class="c"><span class="tag tg">${v.eng}/10</span></td><td style="color:#7abf7a">${v.neg}</td>`;tvis.appendChild(tr);});
-  // Top imob bars
-  const ti=document.getElementById('top-imob-bars');
-  const mx=TOP_IMOB[0].v;
-  TOP_IMOB.forEach(x=>{ti.innerHTML+=`<div class="pr"><div class="pr-lbl">${x.i}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(x.v/mx*100)}%"></div></div><div class="pr-val">${x.v}</div></div>`;});
-  // INCC MZ
-  const tincc=document.getElementById('tb-incc-mz');
-  INCC_MZ.forEach(u=>{const v=((u.at/u.lanc)-1)*100;const tr=document.createElement('tr');tr.innerHTML=`<td style="color:var(--t);font-weight:500">Apto ${u.un}</td><td class="r">R$ ${fN(u.lanc)}</td><td class="r" style="color:var(--t)">R$ ${fN(u.at)}</td><td class="r"><span class="tag tg">+${v.toFixed(1)}%</span></td><td class="r up">+R$ ${fN(u.at-u.lanc)}</td>`;tincc.appendChild(tr);});
+  // Para anos, usar os dados de vendas que têm meses nomeados
+  // Inferir ano pelo contexto (2026 é o ano atual dos dados)
+  // Como os meses são apenas nomes sem ano, usamos 2026 por padrão
+  anosSet.add('2026');
+  anosSet.add('2025');
+
+  // Filtrar meses com dados reais
+  const mesesComDados = MESES_ORDEM.filter(m => mesesSet.has(m));
+
+  // Montar filtro de ANO
+  const navAno = document.getElementById('ano-filters');
+  if(navAno) {
+    navAno.innerHTML = '';
+    const btnAll = document.createElement('button');
+    btnAll.className = 'mf active'; btnAll.textContent = 'Todos';
+    btnAll.onclick = () => setAno('todos', btnAll);
+    navAno.appendChild(btnAll);
+    [...anosSet].sort().forEach(a => {
+      const btn = document.createElement('button');
+      btn.className = 'mf'; btn.textContent = a;
+      btn.onclick = () => setAno(a, btn);
+      navAno.appendChild(btn);
+    });
+  }
+
+  // Montar filtro de MÊS
+  const navMes = document.getElementById('mes-filters');
+  if(navMes) {
+    navMes.innerHTML = '';
+    const btnAll = document.createElement('button');
+    btnAll.className = 'mf active'; btnAll.textContent = 'Todos';
+    btnAll.onclick = () => setMes('todos', btnAll);
+    navMes.appendChild(btnAll);
+    mesesComDados.forEach((m, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'mf';
+      btn.textContent = MESES_ABREV[MESES_ORDEM.indexOf(m)] || m.substring(0,3);
+      btn.title = m;
+      btn.onclick = () => setMes(m, btn);
+      navMes.appendChild(btn);
+    });
+  }
 }
 
-// ══════════════════════════════════════════
-// FILTRO DE MÊS — afeta todos os dados
-// ══════════════════════════════════════════
-let MES_ATIVO = 'todos';
-
-// Dados de visitas por mês (reais, normalizados)
-const GERENTES_VISITAS = [
-  {
-    nome:'Ricardo', foto:'R', cor:'#8B2E2E',
-    total:{vis:171, imobs:55, cor:449, eng:9.2},
-    por_mes:{
-      'Janeiro':   {vis:57,  imobs:27, cor:57,  eng:9.0},
-      'Fevereiro': {vis:8,   imobs:6,  cor:8,   eng:9.0},
-      'Março':     {vis:61,  imobs:22, cor:170, eng:9.5},
-      'Abril':     {vis:45,  imobs:35, cor:214, eng:9.1},
-      'Maio':      {vis:0,   imobs:0,  cor:0,   eng:0},
-      'Junho':     {vis:0,   imobs:0,  cor:0,   eng:0},
-    },
-    top_imobs:{
-      'todos':     [{i:'Emana',v:16},{i:'5 Imob',v:14},{i:'Une',v:11},{i:'Villar',v:10},{i:'Luan Teixeira',v:8},{i:'Fuhro Souto',v:6},{i:'Doro e Lauz',v:6},{i:'Portella',v:5}],
-      'Janeiro':   [{i:'Villar',v:6},{i:'Krolow',v:4},{i:'5 Imob',v:4},{i:'Une',v:4},{i:'Oliveira',v:3},{i:'Emana',v:3}],
-      'Fevereiro': [{i:'Outros',v:3},{i:'5 Imob',v:1},{i:'Breno Becker',v:1},{i:'Casarão',v:1},{i:'Requinte',v:1},{i:'Voluire',v:1}],
-      'Março':     [{i:'5 Imob',v:7},{i:'Emana',v:7},{i:'Une',v:7},{i:'Villar',v:3},{i:'Doro e Lauz',v:3},{i:'Portella',v:3}],
-      'Abril':     [{i:'Emana',v:6},{i:'5 Imob',v:3},{i:'Doro e Lauz',v:3},{i:'Une',v:3},{i:'Villar',v:3},{i:'Requinte',v:3}],
-      'Maio':[], 'Junho':[],
-    },
-  },
-  {
-    nome:'Jonata', foto:'J', cor:'#C9943A',
-    total:{vis:69, imobs:38, cor:215, eng:9.6},
-    por_mes:{
-      'Janeiro':   {vis:0,  imobs:0,  cor:0,   eng:0},
-      'Fevereiro': {vis:0,  imobs:0,  cor:0,   eng:0},
-      'Março':     {vis:40, imobs:23, cor:162, eng:9.7},
-      'Abril':     {vis:29, imobs:22, cor:53,  eng:9.5},
-      'Maio':      {vis:0,  imobs:0,  cor:0,   eng:0},
-      'Junho':     {vis:0,  imobs:0,  cor:0,   eng:0},
-    },
-    top_imobs:{
-      'todos':     [{i:'Rejane Sigal',v:7},{i:'Une',v:5},{i:'5 Imob',v:4},{i:'Krolow',v:4},{i:'Eduardo Marques',v:3},{i:'Lang',v:3},{i:'Otávio Vaz',v:3},{i:'Metah',v:2}],
-      'Janeiro':[], 'Fevereiro':[],
-      'Março':     [{i:'Rejane Sigal',v:5},{i:'Une',v:4},{i:'5 Imob',v:3},{i:'Luan Teixeira',v:2},{i:'Ame',v:2},{i:'Bagé',v:2}],
-      'Abril':     [{i:'Rejane Sigal',v:2},{i:'Krolow',v:3},{i:'Otávio Vaz',v:2},{i:'Eduardo Marques',v:2},{i:'Lang',v:2},{i:'Metah',v:2}],
-      'Maio':[], 'Junho':[],
-    },
-  },
-  {
-    nome:'Lara', foto:'L', cor:'#5a7a9a',
-    total:{vis:82, imobs:42, cor:306, eng:9.4},
-    por_mes:{
-      'Janeiro':   {vis:0,  imobs:0,  cor:0,   eng:0},
-      'Fevereiro': {vis:0,  imobs:0,  cor:0,   eng:0},
-      'Março':     {vis:19, imobs:15, cor:77,  eng:8.9},
-      'Abril':     {vis:62, imobs:32, cor:228, eng:9.6},
-      'Maio':      {vis:1,  imobs:1,  cor:1,   eng:10.0},
-      'Junho':     {vis:0,  imobs:0,  cor:0,   eng:0},
-    },
-    top_imobs:{
-      'todos':     [{i:'Casarão',v:8},{i:'Luan Teixeira',v:8},{i:'Doro e Lauz',v:6},{i:'Nova Era',v:6},{i:'Mariana Dias',v:4},{i:'Up',v:4},{i:'Chiattone',v:3},{i:'Breno Becker',v:3}],
-      'Janeiro':[], 'Fevereiro':[],
-      'Março':     [{i:'Doro e Lauz',v:4},{i:'Luan Teixeira',v:2},{i:'Casarão',v:2},{i:'Mariana Dias',v:2},{i:'Breno Becker',v:2},{i:'Up',v:2}],
-      'Abril':     [{i:'Casarão',v:6},{i:'Luan Teixeira',v:6},{i:'Nova Era',v:6},{i:'Mariana Dias',v:4},{i:'Doro e Lauz',v:2},{i:'Chiattone',v:3}],
-      'Maio':      [{i:'Petry',v:1}],
-      'Junho':[],
-    },
-  },
-];
-
-const FEEDBACKS = {
-  'todos': {
-    pauta_tipos:[
-      {label:'Visita imobiliária',n:61},{label:'Conversa informal',n:40},
-      {label:'Apresent./treinamento',n:37},{label:'Apres. campanha',n:23},
-      {label:'Visita cliente Office',n:12},{label:'Visita cliente RMZ',n:11},
-      {label:'Follow Up',n:10},{label:'Atendimento cliente',n:9},
-      {label:'Power Hour',n:4},{label:'Outros',n:30},
-    ],
-    boas_praticas:[
-      'Sempre sair com próximo passo combinado (Power Hour, visita, treinamento)',
-      'Visita presencial para follow up — mais efetivo que ligação',
-      'Treinamento de produto antes de iniciar ligações na imobiliária',
-      'Aproximação frequente com os corretores mais importantes',
-      'Levar mimos — presentear campeões de vendas (sugestão: viagem)',
-      'Mostrar 2D antes e depois o 3D na apresentação',
-      'Perguntar sobre a imobiliária — gera rapport e intimidade',
-      'Abrir relacionamento com novas imobiliárias da cidade/região',
-      'Estar presente e visível para ser lembrado',
-      'Oferecer café e informalidade aumenta engajamento',
-    ],
-    melhorias:[
-      {tema:'Produto / infraestrutura',pct:28,cor:'#8B2E2E',itens:[
-        'Melhorar estado do apto da 3 de maio',
-        'Unidades precisam de espera para lareira e cortinas automatizadas',
-        'Limpeza das unidades RMZ — vasos e sacadas com acúmulo',
-        'Resposta sobre % de distratos e inadimplentes do Tower',
-      ]},
-      {tema:'Material e preparação',pct:22,cor:'#C9943A',itens:[
-        'Levar material físico nas visitas',
-        'Mais corretores presentes nas apresentações',
-        'Sempre registrar foto da visita',
-        'Pautas mais focadas em gerar negócio',
-      ]},
-      {tema:'Autonomia comercial',pct:18,cor:'#5a7a9a',itens:[
-        'Ter autonomia para aceitar/recusar propostas na hora',
-        'Leads novos para os corretores trabalharem',
-        'Abertura de novos corretores para a carteira',
-      ]},
-      {tema:'Visitas positivas (sem melhorias)',pct:32,cor:'#4a8c4a',itens:[
-        'Visita foi ótima — sem sugestão de melhoria',
-        'Boa conversa inicial — relação em construção',
-        'Apresentação excelente — intimidade conquistada',
-      ]},
-    ],
-    insights:[
-      {tag:'Lançamento',txt:'Corretores sugerem que próximo lançamento seja Loft',tipo:'sugestao'},
-      {tag:'Premiação',txt:'Premiar campeões de vendas com viagem (ideia da imobiliária)',tipo:'ideia'},
-      {tag:'Produto',txt:'Decorar apartamentos facilita a venda — sugestão recorrente',tipo:'sugestao'},
-      {tag:'Dação',txt:'Comissionamento na dação: reunião específica agendada',tipo:'acao'},
-      {tag:'Treinamento',txt:'Casarão: treinamento geral de produtos Zabaleta agendado',tipo:'acao'},
-      {tag:'Novo lançamento',txt:'Proposta de venda de terreno na Osório para novo empreendimento',tipo:'oportunidade'},
-      {tag:'Parceria',txt:'Equipe ex-Bagé montou nova imobiliária — oportunidade nova',tipo:'oportunidade'},
-      {tag:'Dação',txt:'Sugestão: exclusividade de 6 meses + comissão integral nos imóveis de dação',tipo:'sugestao'},
-    ],
-    negocios_destaque:[
-      {imob:'Lang',item:'504 RMZ — cliente Marta Robe'},
-      {imob:'Une',item:'702 RMZ — venda + recebimento de dação'},
-      {imob:'Villar',item:'Cessão direitos sala Tower (Ana Vernetti)'},
-      {imob:'Rejane Sigal',item:'608 RMZ — negociação à vista'},
-      {imob:'Fuhro Souto',item:'Apto Cassiano — venda concluída'},
-      {imob:'Casarão',item:'Sala 809 Office — venda da Márcia'},
-      {imob:'Casarão',item:'Sala 409 — contraproposta montada'},
-      {imob:'Bagé',item:'Terreno em dação para RMZ (corretor Nata)'},
-      {imob:'Up',item:'Sala Office com dação terreno Laranjal'},
-      {imob:'Emana',item:'702 RMZ — diversas condições de pagamento enviadas'},
-    ],
-  },
-  'Março':{
-    pauta_tipos:[
-      {label:'Visita imobiliária',n:20},{label:'Conversa informal',n:15},
-      {label:'Apresent./treinamento',n:18},{label:'Follow Up',n:5},
-      {label:'Atendimento cliente',n:6},{label:'Visita cliente RMZ',n:8},{label:'Power Hour',n:3},
-    ],
-    boas_praticas:[
-      'Sempre deixar próximo passo combinado ao final da visita',
-      'Visita presencial para follow up de negociações em aberto',
-      'Treinamento de produto antes de ligações — alinhamento com a equipe',
-      'Abrir relacionamento com imobiliárias novas',
-      'Aproximação de corretores importantes via visita pessoal',
-      'Levar convites do Open House — gerou engajamento',
-    ],
-    melhorias:[
-      {tema:'Produto',pct:30,cor:'#8B2E2E',itens:['Melhorar estado do apto da 3 de maio','Unidades com espera para lareira']},
-      {tema:'Material',pct:20,cor:'#C9943A',itens:['Levar material físico','Pautas mais focadas em negócio']},
-      {tema:'Autonomia',pct:20,cor:'#5a7a9a',itens:['Autonomia para aceitar propostas na hora','Mais leads novos']},
-      {tema:'Positivo',pct:30,cor:'#4a8c4a',itens:['Visitas excelentes — sem melhorias apontadas']},
-    ],
-    insights:[
-      {tag:'Produto',txt:'Sugestão: decorar aptos facilita a venda',tipo:'sugestao'},
-      {tag:'Premiação',txt:'Premiar campeões de vendas com viagem',tipo:'ideia'},
-      {tag:'Lançamento',txt:'Corretores indicam preferência por Loft no próximo lançamento',tipo:'sugestao'},
-      {tag:'Treinamento',txt:'Casarão: treinamento geral de produtos agendado',tipo:'acao'},
-    ],
-    negocios_destaque:[
-      {imob:'Fuhro Souto',item:'Apto Cassiano — venda concluída'},
-      {imob:'Lang',item:'504 RMZ — cliente Marta Robe'},
-      {imob:'Une',item:'702 RMZ — venda + dação'},
-      {imob:'Villar',item:'Cessão direitos sala Tower'},
-      {imob:'Rejane Sigal',item:'Aline — Open House (decorado)'},
-    ],
-  },
-  'Abril':{
-    pauta_tipos:[
-      {label:'Apres. campanha',n:23},{label:'Visita imobiliária',n:35},
-      {label:'Conversa informal',n:18},{label:'Atendimento cliente',n:9},
-      {label:'Follow Up',n:5},{label:'Visita cliente RMZ',n:3},{label:'Power Hour',n:1},
-    ],
-    boas_praticas:[
-      'Levar mimos de páscoa gerou excelente receptividade',
-      'Estar presente e ser lembrado — reafirmado por Andressa',
-      'Estreitar relação com lideranças das imobiliárias',
-      'Aproximação de novas imobiliárias — abertura de mercado',
-      'Manter proximidade e escuta ativa com corretores',
-    ],
-    melhorias:[
-      {tema:'Produto',pct:25,cor:'#8B2E2E',itens:['Limpeza das unidades RMZ','Resposta sobre distratos Tower']},
-      {tema:'Material',pct:25,cor:'#C9943A',itens:['Material físico nas visitas','Foto sempre']},
-      {tema:'Positivo',pct:50,cor:'#4a8c4a',itens:['Maioria das visitas avaliadas positivamente']},
-    ],
-    insights:[
-      {tag:'Negócio',txt:'Proposta terreno na Osório para novo empreendimento (corretor Gabriel)',tipo:'oportunidade'},
-      {tag:'Dação',txt:'Imóveis em dação: exclusividade 6 meses + comissão integral discutida',tipo:'acao'},
-      {tag:'Produto',txt:'Cliente interessada em migrar do Tower pro Office — demanda real',tipo:'oportunidade'},
-      {tag:'Parceria',txt:'Ex-equipe Bagé montou imobiliária própria — nova parceria em construção',tipo:'oportunidade'},
-    ],
-    negocios_destaque:[
-      {imob:'Casarão',item:'Sala 809 Office — venda da Márcia'},
-      {imob:'Casarão',item:'Sala 409 — contraproposta'},
-      {imob:'Up',item:'Sala Office com dação terreno Laranjal'},
-      {imob:'Emana',item:'702 RMZ — condições de pagamento enviadas'},
-      {imob:'Rejane Sigal',item:'608 e 702 RMZ — negociações abertas'},
-    ],
-  },
-};
-
-const VISITAS_MES = {
-  'todos': {vis:277, imobs:89, cor:759, eng:9.3},
-  'Janeiro':   {vis:57,  imobs:27, cor:57,  eng:9.0},
-  'Fevereiro': {vis:8,   imobs:6,  cor:8,   eng:9.0},
-  'Março':     {vis:85,  imobs:37, cor:247, eng:9.4},
-  'Abril':     {vis:126, imobs:72, cor:446, eng:9.4},
-  'Maio':      {vis:1,   imobs:1,  cor:1,   eng:10.0},
-  'Junho':     {vis:0,   imobs:0,  cor:0,   eng:0},
-};
-
-// Top imobiliárias por mês
-const TOP_IMOB_MES = {
-  'todos': [{i:'Emana',v:16},{i:'5 Imob',v:15},{i:'Luan Teixeira',v:14},{i:'Une',v:12},
-    {i:'Doro e Lauz',v:11},{i:'Casarão',v:10},{i:'Villar',v:10},{i:'Rejane Sigal',v:9},
-    {i:'Up',v:7},{i:'Krolow',v:7},{i:'Ame',v:6},{i:'Fuhro Souto',v:6},
-    {i:'Nova Era',v:6},{i:'Requinte',v:6},{i:'Otávio Vaz',v:5},
-    {i:'Breno Becker',v:5},{i:'Bagé',v:5},{i:'Portella',v:5},
-    {i:'Rodrigo Maysonave',v:5},{i:'Outros',v:5}],
-  'Janeiro': [{i:'Villar',v:6},{i:'Krolow',v:4},{i:'5 Imob',v:4},{i:'Une',v:4},
-    {i:'Oliveira',v:3},{i:'Up',v:3},{i:'Requinte',v:3},{i:'Doro e Lauz',v:3},
-    {i:'Emana',v:3},{i:'Ame',v:2}],
-  'Fevereiro': [{i:'Outros',v:3},{i:'5 Imob',v:1},{i:'Breno Becker',v:1},
-    {i:'Casarão',v:1},{i:'Requinte',v:1},{i:'Voluire',v:1}],
-  'Março': [{i:'5 Imob',v:7},{i:'Luan Teixeira',v:7},{i:'Une',v:7},{i:'Emana',v:7},
-    {i:'Rejane Sigal',v:6},{i:'Doro e Lauz',v:4},{i:'Otávio Vaz',v:4},
-    {i:'Norte',v:3},{i:'Ame',v:3},{i:'Villar',v:3}],
-  'Abril': [{i:'Nova Era',v:6},{i:'Luan Teixeira',v:6},{i:'Emana',v:6},{i:'Casarão',v:6},
-    {i:'Doro e Lauz',v:4},{i:'Up',v:4},{i:'Mariana Dias',v:4},
-    {i:'5 Imob',v:3},{i:'Chiattone',v:3},{i:'Rejane Sigal',v:3}],
-  'Maio': [{i:'Petry',v:1}],
-  'Junho': [],
-};
+function setAno(ano, btn) {
+  ANO_ATIVO = ano;
+  document.querySelectorAll('#ano-filters .mf').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Ao mudar o ano, resetar filtro de mês
+  MES_ATIVO = 'todos';
+  document.querySelectorAll('#mes-filters .mf').forEach(b => b.classList.remove('active'));
+  const todosBtn = document.querySelector('#mes-filters .mf');
+  if(todosBtn) todosBtn.classList.add('active');
+  // Fechar drawers e atualizar
+  openDrawers.forEach(id => { const d=document.getElementById(id); if(d) d.classList.remove('open'); });
+  openDrawers.clear();
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  ['tb-vend-all','tb-imob','meta-mes-cards','meta-cards-emp',
+   'top-imob-bars','tb-vis-negs','tb-est-all',
+   'tb-vend-tower','tb-vend-office','tb-vend-rmz','tb-vend-terc'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.innerHTML = '';
+  });
+  Object.keys(CHS).forEach(k => dc(k));
+  atualizarKPIs();
+  renderGerentes();
+  renderGerentesVisitas();
+  renderFunil();
+  renderPerdidos();
+}
 
 function setMes(mes, btn) {
   MES_ATIVO = mes;
