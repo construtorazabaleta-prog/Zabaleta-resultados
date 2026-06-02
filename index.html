@@ -862,391 +862,329 @@ td.c{text-align:center}
 
 <div style="height:40px"></div>
 </div><!-- /wrap -->
+<!-- ══ MÓDULO RH COMPLETO ══ -->
 <div id="pane-rh" class="wrap" style="display:none">
-<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--b)">
-  <div style="display:flex;align-items:center;gap:6px">
+
+<!-- FILTRO ANO + MÊS -->
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:12px 0;border-bottom:1px solid var(--b);flex-wrap:wrap">
+  <div style="display:flex;align-items:center;gap:5px">
     <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">Ano</span>
     <div id="ano-filter-rh" style="display:flex;gap:3px"></div>
   </div>
   <div style="width:1px;height:14px;background:var(--b)"></div>
-  <div style="display:flex;align-items:center;gap:6px">
+  <div style="display:flex;align-items:center;gap:5px">
     <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">Mês</span>
     <div id="mes-filter-rh" style="display:flex;gap:3px;flex-wrap:wrap"></div>
   </div>
-  <button onclick="loadRH()" style="margin-left:auto;font-size:11px;padding:3px 10px;background:var(--bg3);border:1px solid var(--b);border-radius:4px;color:var(--t3);cursor:pointer">↺ Atualizar RH</button>
-</div>
-<div class="drawer" id="nps-detail">
-  <div class="drawer-inner">
-    <div class="dt">Evolução do NPS Interno</div>
-    <div class="ds">Nota média de satisfação dos colaboradores por período</div>
-    <div style="position:relative;height:220px"><canvas id="cNpsInt"></canvas></div>
-  </div>
+  <button onclick="loadRH()" style="margin-left:auto;font-size:11px;padding:3px 12px;background:var(--bg3);border:1px solid var(--b);border-radius:4px;color:var(--t3);cursor:pointer">↺ Atualizar RH</button>
 </div>
 
+<!-- ══ 1. NPS INTERNO ══ -->
+<div class="sec-head"><span class="sec-num">1</span><span class="sec-title">NPS Interno</span><span class="sec-sub">Satisfação dos colaboradores</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-nps')">
+    <div class="klbl">NPS Score</div><div class="kval" id="rh-nps-score">—</div>
+    <div class="ksub" id="rh-nps-score-s">último período</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleRH('rh-nps')">
+    <div class="klbl">Melhor resultado</div><div class="kval" id="rh-nps-best">—</div>
+    <div class="ksub" id="rh-nps-best-s">histórico</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleRH('rh-nps')">
+    <div class="klbl">Última medição</div><div class="kval" id="rh-nps-last">—</div>
+    <div class="ksub" id="rh-nps-last-s">período</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleRH('rh-nps')">
+    <div class="klbl">Medições</div><div class="kval" id="rh-nps-count">—</div>
+    <div class="ksub">histórico</div><span class="kchev">▼</span>
+  </div>
+</div>
+<div class="drawer" id="rh-nps">
+  <div class="drawer-inner">
+    <div class="dt">Evolução NPS Interno — período completo vs selecionado</div>
+    <div class="ds" id="rh-nps-ds">Satisfação dos colaboradores</div>
+    <div style="position:relative;height:220px"><canvas id="cRhNps"></canvas></div>
+  </div>
+</div>
 <div class="divider"></div>
 
 <!-- ══ 2. TURNOVER ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">2</span>
-  <span class="sec-title">Turnover</span>
-  <span class="sec-sub">Rotatividade de colaboradores</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('turn-detail')">
-    <div class="klbl">Turnover atual</div>
-    <div class="kval" id="turn-atual">—<sub>%</sub></div>
-    <div class="ksub" id="turn-atual-s">último mês</div>
-    <span class="kchev">▼</span>
+<div class="sec-head"><span class="sec-num">2</span><span class="sec-title">Turnover</span><span class="sec-sub">Rotatividade</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-turn')">
+    <div class="klbl">Taxa atual</div><div class="kval" id="rh-turn-atual">—<sub>%</sub></div>
+    <div class="ksub" id="rh-turn-atual-s">último mês</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('turn-detail')">
-    <div class="klbl">Média histórica</div>
-    <div class="kval" id="turn-media">—<sub>%</sub></div>
-    <div class="ksub">todos os períodos</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-turn')">
+    <div class="klbl">Média histórica</div><div class="kval" id="rh-turn-media">—<sub>%</sub></div>
+    <div class="ksub">todo período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('turn-detail')">
-    <div class="klbl">Pico máximo</div>
-    <div class="kval" id="turn-max">—<sub>%</sub></div>
-    <div class="ksub" id="turn-max-s">pior mês</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-turn')">
+    <div class="klbl">Pico máximo</div><div class="kval" id="rh-turn-max">—<sub>%</sub></div>
+    <div class="ksub" id="rh-turn-max-s">pior mês</div><span class="kchev">▼</span>
   </div>
-  <div class="card green" onclick="toggleRH('turn-detail')">
-    <div class="klbl">Meses zerados</div>
-    <div class="kval" id="turn-zero">—</div>
-    <div class="ksub">sem desligamentos</div>
-    <span class="kchev">▼</span>
+  <div class="card green" onclick="toggleRH('rh-turn')">
+    <div class="klbl">Meses sem turnover</div><div class="kval" id="rh-turn-zero">—</div>
+    <div class="ksub">zerados</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="turn-detail">
+<div class="drawer" id="rh-turn">
   <div class="drawer-inner">
-    <div class="dt">Turnover mensal</div>
-    <div class="ds">Taxa de rotatividade (%) — histórico completo</div>
-    <div style="position:relative;height:220px"><canvas id="cTurnover"></canvas></div>
+    <div class="dt">Turnover mensal — completo vs selecionado</div>
+    <div class="ds">Taxa de rotatividade (%) · linha vermelha = média histórica</div>
+    <div style="position:relative;height:220px"><canvas id="cRhTurn"></canvas></div>
   </div>
 </div>
-
 <div class="divider"></div>
 
 <!-- ══ 3. ASSIDUIDADE ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">3</span>
-  <span class="sec-title">Assiduidade / Faltas</span>
-  <span class="sec-sub">Faltas, ATM e afastamentos</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('ass-detail')">
-    <div class="klbl">Total de faltas</div>
-    <div class="kval" id="ass-faltas">—</div>
-    <div class="ksub" id="ass-faltas-s">no período</div>
-    <span class="kchev">▼</span>
+<div class="sec-head"><span class="sec-num">3</span><span class="sec-title">Assiduidade</span><span class="sec-sub">Faltas e afastamentos</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-ass')">
+    <div class="klbl">Total faltas</div><div class="kval" id="rh-ass-faltas">—</div>
+    <div class="ksub" id="rh-ass-faltas-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('ass-detail')">
-    <div class="klbl">ATM (meio período)</div>
-    <div class="kval" id="ass-atm">—</div>
-    <div class="ksub" id="ass-atm-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-ass')">
+    <div class="klbl">ATM</div><div class="kval" id="rh-ass-atm">—</div>
+    <div class="ksub">meio período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('ass-detail')">
-    <div class="klbl">Afastamentos INSS</div>
-    <div class="kval" id="ass-inss">—</div>
-    <div class="ksub" id="ass-inss-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-ass')">
+    <div class="klbl">Afastamentos INSS</div><div class="kval" id="rh-ass-inss">—</div>
+    <div class="ksub">dias</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('ass-detail')">
-    <div class="klbl">Faltas Tower</div>
-    <div class="kval" id="ass-tower">—</div>
-    <div class="ksub" id="ass-tower-s">último registro</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-ass')">
+    <div class="klbl">Colaboradores</div><div class="kval" id="rh-ass-colab">—</div>
+    <div class="ksub">com alguma falta</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="ass-detail">
+<div class="drawer" id="rh-ass">
   <div class="drawer-inner">
-    <div class="dt">Detalhamento de assiduidade</div>
-    <div class="ds">Faltas e afastamentos por colaborador</div>
+    <div class="dt">Assiduidade detalhada</div>
+    <div class="ds">Faltas por colaborador · histórico completo destacado</div>
     <div class="g2" style="margin-bottom:16px">
-      <div>
-        <div class="dt" style="font-size:12px;margin-bottom:8px">Faltas Tower (obra)</div>
-        <div style="position:relative;height:180px"><canvas id="cFaltasTower"></canvas></div>
-      </div>
-      <div>
-        <div class="dt" style="font-size:12px;margin-bottom:8px">Colaboradores com faltas</div>
-        <div style="position:relative;height:180px"><canvas id="cFaltasDistrib"></canvas></div>
-      </div>
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Faltas acumuladas por mês</div>
+        <div style="position:relative;height:180px"><canvas id="cRhFaltas"></canvas></div></div>
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Top colaboradores com mais faltas</div>
+        <div id="rh-ass-top"></div></div>
     </div>
-    <div class="dt" style="font-size:12px;margin-bottom:8px">Registro individual de assiduidade</div>
     <div class="tw"><table>
-      <thead><tr><th>Mês</th><th>Colaborador</th><th style="text-align:right">Faltas</th><th style="text-align:right">ATM</th><th style="text-align:right">Afast. INSS</th></tr></thead>
-      <tbody id="tb-ass"></tbody>
+      <thead><tr><th>Mês</th><th>Colaborador</th><th class="r">Faltas</th><th class="r">ATM</th><th class="r">INSS</th></tr></thead>
+      <tbody id="tb-rh-ass"></tbody>
     </table></div>
   </div>
 </div>
-
 <div class="divider"></div>
 
 <!-- ══ 4. RECRUTAMENTO ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">4</span>
-  <span class="sec-title">Recrutamento e Seleção</span>
-  <span class="sec-sub">Vagas, entrevistas e aprovações</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('rec-detail')">
-    <div class="klbl">Vagas abertas</div>
-    <div class="kval" id="rec-vagas">—</div>
-    <div class="ksub" id="rec-vagas-s">no período</div>
-    <span class="kchev">▼</span>
+<div class="sec-head"><span class="sec-num">4</span><span class="sec-title">Recrutamento e Seleção</span><span class="sec-sub">Vagas e contratações</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-rec')">
+    <div class="klbl">Vagas abertas</div><div class="kval" id="rh-rec-vagas">—</div>
+    <div class="ksub" id="rh-rec-vagas-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('rec-detail')">
-    <div class="klbl">Entrevistas</div>
-    <div class="kval" id="rec-entre">—</div>
-    <div class="ksub" id="rec-entre-s">realizadas</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-rec')">
+    <div class="klbl">Entrevistas</div><div class="kval" id="rh-rec-entre">—</div>
+    <div class="ksub">realizadas</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('rec-detail')">
-    <div class="klbl">Aprovados</div>
-    <div class="kval" id="rec-aprov">—</div>
-    <div class="ksub" id="rec-aprov-s">contratados</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-rec')">
+    <div class="klbl">Aprovados</div><div class="kval" id="rh-rec-aprov">—</div>
+    <div class="ksub">contratados</div><span class="kchev">▼</span>
   </div>
-  <div class="card gold" onclick="toggleRH('rec-detail')">
-    <div class="klbl">Taxa de aprovação</div>
-    <div class="kval" id="rec-taxa">—<sub>%</sub></div>
-    <div class="ksub">aprovados / entrevistados</div>
-    <span class="kchev">▼</span>
+  <div class="card gold" onclick="toggleRH('rh-rec')">
+    <div class="klbl">Taxa de aprovação</div><div class="kval" id="rh-rec-taxa">—<sub>%</sub></div>
+    <div class="ksub">aprovados/entrevistados</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleRH('rh-rec')">
+    <div class="klbl">Tempo médio</div><div class="kval" id="rh-rec-tempo">—<sub>d</sub></div>
+    <div class="ksub">demanda → contratação</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="rec-detail">
+<div class="drawer" id="rh-rec">
   <div class="drawer-inner">
-    <div class="dt">Recrutamento — evolução mensal</div>
-    <div class="ds">Vagas, entrevistas e aprovados por mês</div>
-    <div style="position:relative;height:220px;margin-bottom:16px"><canvas id="cRec"></canvas></div>
-    <div class="dt" style="font-size:12px;margin-bottom:10px">Cargos mais recrutados</div>
-    <div id="rec-cargos"></div>
+    <div class="dt">Recrutamento — evolução vs histórico completo</div>
+    <div class="ds">Vagas abertas, entrevistas e aprovados por mês</div>
+    <div style="position:relative;height:220px;margin-bottom:16px"><canvas id="cRhRec"></canvas></div>
+    <div class="g2">
+      <div><div class="dt" style="font-size:12px;margin-bottom:8px">Cargos mais recrutados</div><div id="rh-rec-cargos"></div></div>
+      <div><div class="dt" style="font-size:12px;margin-bottom:8px">Por empreendimento</div><div id="rh-rec-emps"></div></div>
+    </div>
   </div>
 </div>
-
 <div class="divider"></div>
 
 <!-- ══ 5. DESEMPENHO ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">5</span>
-  <span class="sec-title">Desempenho dos Colaboradores</span>
-  <span class="sec-sub">Avaliações de desempenho</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('desemp-detail')">
-    <div class="klbl">Média de desempenho</div>
-    <div class="kval" id="desemp-media">—</div>
-    <div class="ksub" id="desemp-media-s">última avaliação</div>
-    <span class="kchev">▼</span>
+<div class="sec-head"><span class="sec-num">5</span><span class="sec-title">Desempenho</span><span class="sec-sub">Avaliações de colaboradores</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-desemp')">
+    <div class="klbl">Média de desempenho</div><div class="kval" id="rh-desemp-media">—</div>
+    <div class="ksub" id="rh-desemp-media-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('desemp-detail')">
-    <div class="klbl">Colaboradores avaliados</div>
-    <div class="kval" id="desemp-count">—</div>
-    <div class="ksub" id="desemp-count-s">na última rodada</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-desemp')">
+    <div class="klbl">Avaliados</div><div class="kval" id="rh-desemp-count">—</div>
+    <div class="ksub" id="rh-desemp-count-s">colaboradores</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('desemp-detail')">
-    <div class="klbl">Avaliações realizadas</div>
-    <div class="kval" id="desemp-rounds">—</div>
-    <div class="ksub">rodadas históricas</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-desemp')">
+    <div class="klbl">Acima de 90%</div><div class="kval" id="rh-desemp-top">—</div>
+    <div class="ksub">alta performance</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleRH('rh-desemp')">
+    <div class="klbl">Rodadas</div><div class="kval" id="rh-desemp-rounds">—</div>
+    <div class="ksub">avaliações históricas</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="desemp-detail">
+<div class="drawer" id="rh-desemp">
   <div class="drawer-inner">
-    <div class="dt">Evolução do desempenho médio</div>
-    <div class="ds">Nota média por rodada de avaliação</div>
-    <div style="position:relative;height:200px;margin-bottom:16px"><canvas id="cDesemp"></canvas></div>
-    <div class="dt" style="font-size:12px;margin-bottom:8px">Ranking de desempenho — última avaliação</div>
+    <div class="dt">Desempenho — evolução histórica</div>
+    <div class="ds">Nota média por rodada · período selecionado destacado</div>
+    <div class="g2">
+      <div style="position:relative;height:200px"><canvas id="cRhDesemp"></canvas></div>
+      <div>
+        <div class="dt" style="font-size:12px;margin-bottom:6px">Distribuição de notas</div>
+        <div style="position:relative;height:200px"><canvas id="cRhDesempDist"></canvas></div>
+      </div>
+    </div>
+    <div class="dt" style="font-size:12px;margin:14px 0 8px">Ranking — período selecionado</div>
     <div class="tw"><table>
-      <thead><tr><th>Colaborador</th><th>Setor</th><th>Avaliador</th><th style="text-align:right">Nota</th></tr></thead>
-      <tbody id="tb-desemp"></tbody>
+      <thead><tr><th>Colaborador</th><th>Setor</th><th>Avaliador</th><th class="r">Nota</th></tr></thead>
+      <tbody id="tb-rh-desemp"></tbody>
     </table></div>
   </div>
 </div>
-
 <div class="divider"></div>
 
 <!-- ══ 6. ENDOMARKETING ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">6</span>
-  <span class="sec-title">Endomarketing</span>
-  <span class="sec-sub">Ações e custos</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('endo-detail')">
-    <div class="klbl">Total investido</div>
-    <div class="kval" id="endo-total">—</div>
-    <div class="ksub" id="endo-total-s">histórico</div>
-    <span class="kchev">▼</span>
+<div class="sec-head"><span class="sec-num">6</span><span class="sec-title">Endomarketing</span><span class="sec-sub">Ações e investimentos</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-endo')">
+    <div class="klbl">Investimento</div><div class="kval" id="rh-endo-total">—</div>
+    <div class="ksub" id="rh-endo-total-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('endo-detail')">
-    <div class="klbl">Ações realizadas</div>
-    <div class="kval" id="endo-acoes">—</div>
-    <div class="ksub" id="endo-acoes-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-endo')">
+    <div class="klbl">Ações realizadas</div><div class="kval" id="rh-endo-acoes">—</div>
+    <div class="ksub" id="rh-endo-acoes-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('endo-detail')">
+  <div class="card" onclick="toggleRH('rh-endo')">
     <div class="klbl">Maior ação</div>
-    <div class="kval" id="endo-maior" style="font-size:16px;line-height:1.2">—</div>
-    <div class="ksub" id="endo-maior-s">por investimento</div>
-    <span class="kchev">▼</span>
+    <div class="kval" id="rh-endo-maior" style="font-size:14px;line-height:1.3">—</div>
+    <div class="ksub" id="rh-endo-maior-s">por investimento</div><span class="kchev">▼</span>
   </div>
-  <div class="card gold" onclick="toggleRH('endo-detail')">
-    <div class="klbl">Média por ação</div>
-    <div class="kval" id="endo-media">—</div>
-    <div class="ksub">custo médio</div>
-    <span class="kchev">▼</span>
+  <div class="card gold" onclick="toggleRH('rh-endo')">
+    <div class="klbl">Média por ação</div><div class="kval" id="rh-endo-media">—</div>
+    <div class="ksub">custo médio</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="endo-detail">
+<div class="drawer" id="rh-endo">
   <div class="drawer-inner">
-    <div class="dt">Investimento em endomarketing por mês</div>
-    <div class="ds">Custo total e número de ações</div>
-    <div style="position:relative;height:200px;margin-bottom:16px"><canvas id="cEndo"></canvas></div>
-    <div class="dt" style="font-size:12px;margin-bottom:10px">Top ações por investimento</div>
-    <div id="endo-top-acoes"></div>
+    <div class="dt">Endomarketing — investimento mensal vs histórico</div>
+    <div class="ds">Custo total e número de ações por mês</div>
+    <div style="position:relative;height:200px;margin-bottom:16px"><canvas id="cRhEndo"></canvas></div>
+    <div class="g2">
+      <div><div class="dt" style="font-size:12px;margin-bottom:8px">Top ações por investimento</div><div id="rh-endo-top"></div></div>
+      <div><div class="dt" style="font-size:12px;margin-bottom:8px">Ações do período</div>
+        <div class="tw"><table><thead><tr><th>Mês</th><th>Ação</th><th class="r">Custo</th></tr></thead>
+        <tbody id="tb-rh-endo"></tbody></table></div>
+      </div>
+    </div>
   </div>
 </div>
-
 <div class="divider"></div>
 
 <!-- ══ 7. PDI ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">7</span>
-  <span class="sec-title">PDI — Desenvolvimento</span>
-  <span class="sec-sub">Plano de desenvolvimento individual</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('pdi-detail')">
-    <div class="klbl">Colaboradores no PDI</div>
-    <div class="kval" id="pdi-count">—</div>
-    <div class="ksub" id="pdi-count-s">no período</div>
-    <span class="kchev">▼</span>
+<div class="sec-head"><span class="sec-num">7</span><span class="sec-title">PDI — Desenvolvimento</span><span class="sec-sub">Plano de desenvolvimento individual</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-pdi')">
+    <div class="klbl">Tarefas no PDI</div><div class="kval" id="rh-pdi-count">—</div>
+    <div class="ksub" id="rh-pdi-count-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('pdi-detail')">
-    <div class="klbl">Tarefas entregues</div>
-    <div class="kval" id="pdi-entregues">—</div>
-    <div class="ksub" id="pdi-entregues-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card green" onclick="toggleRH('rh-pdi')">
+    <div class="klbl">Entregues</div><div class="kval" id="rh-pdi-entregues">—</div>
+    <div class="ksub" id="rh-pdi-pct">taxa de entrega</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('pdi-detail')">
-    <div class="klbl">Entregues com atraso</div>
-    <div class="kval" id="pdi-atrasados">—</div>
-    <div class="ksub" id="pdi-atrasados-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-pdi')">
+    <div class="klbl">Com atraso</div><div class="kval" id="rh-pdi-atrasados">—</div>
+    <div class="ksub">entregas tardias</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('pdi-detail')">
-    <div class="klbl">Custo total PDI</div>
-    <div class="kval" id="pdi-custo">—</div>
-    <div class="ksub" id="pdi-custo-s">investido</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-pdi')">
+    <div class="klbl">Custo investido</div><div class="kval" id="rh-pdi-custo">—</div>
+    <div class="ksub">em cursos/livros</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="pdi-detail">
+<div class="drawer" id="rh-pdi">
   <div class="drawer-inner">
-    <div class="dt">PDI — Histórico por período</div>
-    <div class="ds">Colaboradores, entregas e atrasos</div>
-    <div style="position:relative;height:200px"><canvas id="cPdi"></canvas></div>
+    <div class="dt">PDI — histórico completo vs selecionado</div>
+    <div class="ds">Colaboradores, entregas e atrasos por período</div>
+    <div style="position:relative;height:200px"><canvas id="cRhPdi"></canvas></div>
   </div>
 </div>
-
 <div class="divider"></div>
 
-<!-- ══ 8. REUNIÕES RH ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">8</span>
-  <span class="sec-title">Reuniões de RH</span>
-  <span class="sec-sub">Cadência e tipos de reunião</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('reun-detail')">
-    <div class="klbl">Total de reuniões</div>
-    <div class="kval" id="reun-total">—</div>
-    <div class="ksub" id="reun-total-s">no período</div>
-    <span class="kchev">▼</span>
+<!-- ══ 8. REUNIÕES ══ -->
+<div class="sec-head"><span class="sec-num">8</span><span class="sec-title">Reuniões de RH</span><span class="sec-sub">Cadência e tipos</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-reun')">
+    <div class="klbl">Total reuniões</div><div class="kval" id="rh-reun-total">—</div>
+    <div class="ksub" id="rh-reun-total-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('reun-detail')">
-    <div class="klbl">1 a 1 RH + Líder</div>
-    <div class="kval" id="reun-1a1">—</div>
-    <div class="ksub" id="reun-1a1-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-reun')">
+    <div class="klbl">1 a 1 RH + Líder</div><div class="kval" id="rh-reun-1a1">—</div>
+    <div class="ksub">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('reun-detail')">
-    <div class="klbl">Reuniões de cultura</div>
-    <div class="kval" id="reun-cult">—</div>
-    <div class="ksub" id="reun-cult-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-reun')">
+    <div class="klbl">Reuniões cultura</div><div class="kval" id="rh-reun-cult">—</div>
+    <div class="ksub">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('reun-detail')">
-    <div class="klbl">Treinamentos liderança</div>
-    <div class="kval" id="reun-trei">—</div>
-    <div class="ksub" id="reun-trei-s">no período</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-reun')">
+    <div class="klbl">Treinamentos liderança</div><div class="kval" id="rh-reun-trei">—</div>
+    <div class="ksub">período</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="reun-detail">
+<div class="drawer" id="rh-reun">
   <div class="drawer-inner">
-    <div class="dt">Reuniões por tipo — evolução mensal</div>
-    <div class="ds">Quantidade de reuniões realizadas por categoria</div>
-    <div style="position:relative;height:220px"><canvas id="cReun"></canvas></div>
+    <div class="dt">Reuniões por tipo — histórico vs selecionado</div>
+    <div class="ds">Quantidade realizada por categoria de reunião</div>
+    <div style="position:relative;height:240px"><canvas id="cRhReun"></canvas></div>
   </div>
 </div>
-
 <div class="divider"></div>
 
 <!-- ══ 9. TERMÔMETRO ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">9</span>
-  <span class="sec-title">Termômetro — Headcount / Custos</span>
-  <span class="sec-sub">Distribuição por setor</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('term-detail')">
-    <div class="klbl">Total folha</div>
-    <div class="kval" id="term-total">—</div>
-    <div class="ksub" id="term-total-s">último registro</div>
-    <span class="kchev">▼</span>
+<div class="sec-head"><span class="sec-num">9</span><span class="sec-title">Termômetro — Custos por Setor</span><span class="sec-sub">Distribuição da folha</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleRH('rh-term')">
+    <div class="klbl">Total folha</div><div class="kval" id="rh-term-total">—</div>
+    <div class="ksub" id="rh-term-total-s">último registro</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('term-detail')">
-    <div class="klbl">Op. RMZ</div>
-    <div class="kval" id="term-rmz">—</div>
-    <div class="ksub" id="term-rmz-s">último registro</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-term')">
+    <div class="klbl">Op. RMZ</div><div class="kval" id="rh-term-rmz">—</div>
+    <div class="ksub" id="rh-term-rmz-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('term-detail')">
-    <div class="klbl">Op. Zabaleta Office</div>
-    <div class="kval" id="term-zo">—</div>
-    <div class="ksub" id="term-zo-s">último registro</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-term')">
+    <div class="klbl">Op. Z.Office</div><div class="kval" id="rh-term-zo">—</div>
+    <div class="ksub" id="rh-term-zo-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('term-detail')">
-    <div class="klbl">Adm. Geral</div>
-    <div class="kval" id="term-adm">—</div>
-    <div class="ksub" id="term-adm-s">último registro</div>
-    <span class="kchev">▼</span>
+  <div class="card" onclick="toggleRH('rh-term')">
+    <div class="klbl">Adm. Geral</div><div class="kval" id="rh-term-adm">—</div>
+    <div class="ksub" id="rh-term-adm-s">período</div><span class="kchev">▼</span>
   </div>
-  <div class="card" onclick="toggleRH('term-detail')">
-    <div class="klbl">Comercial</div>
-    <div class="kval" id="term-com">—</div>
-    <div class="ksub" id="term-com-s">último registro</div>
-    <span class="kchev">▼</span>
+  <div class="card gold" onclick="toggleRH('rh-term')">
+    <div class="klbl">Comercial</div><div class="kval" id="rh-term-com">—</div>
+    <div class="ksub" id="rh-term-com-s">período</div><span class="kchev">▼</span>
   </div>
 </div>
-<div class="drawer" id="term-detail">
+<div class="drawer" id="rh-term">
   <div class="drawer-inner">
-    <div class="dt">Distribuição por setor — último período</div>
-    <div class="ds">Custo de folha por área</div>
+    <div class="dt">Distribuição da folha por setor</div>
+    <div class="ds">Custo mensal por área · histórico completo</div>
     <div class="g2">
-      <div style="position:relative;height:220px"><canvas id="cTermDonut"></canvas></div>
-      <div id="term-bars"></div>
+      <div style="position:relative;height:220px"><canvas id="cRhTermDonut"></canvas></div>
+      <div style="position:relative;height:220px"><canvas id="cRhTermLine"></canvas></div>
     </div>
   </div>
 </div>
 
 <div style="height:40px"></div>
-</div><!-- /wrap -->
+</div><!-- /pane-rh -->
+<!-- /wrap -->
 
 
 <script>
@@ -3154,12 +3092,12 @@ setInterval(loadAllSheets, 5 * 60 * 1000);
 
 
 // ══════ RH MODULE ══════
-
-// ══ CONFIG ══
+// ══════════════════════════════════════
+// MÓDULO RH — JS COMPLETO
+// ══════════════════════════════════════
 const SHEET_RH = '13v3naobHnEBVsRfFlQsIYjuXqDf7Hx5KfCOj6xBe2OU';
 
-// ══ ABAS ══
-const ABAS = {
+const ABAS_RH = {
   nps:        'NPS Interno',
   turnover:   'Turnover',
   assiduidade:'ASSIDUIDADE',
@@ -3174,635 +3112,577 @@ const ABAS = {
 
 let LIVE_RH = {};
 let MES_RH = 'todos';
+let ANO_RH = 'todos';
 let CHS_RH = {};
 const openDrawersRH = new Set();
+let LIVE_RH_RH_loaded = false;
 
-// ══ UTILS ══
+// ── UTILS RH ──
 const fRRH = n => { const a=Math.abs(n); return (n<0?'-':'')+(a>=1e6?'R$ '+(a/1e6).toFixed(1)+'M':a>=1e3?'R$ '+(a/1e3).toFixed(0)+'k':'R$ '+a.toFixed(0)); };
 function dcRH(id){ if(CHS_RH[id]){try{CHS_RH[id].destroy()}catch(e){}delete CHS_RH[id];} }
-const parsePtBRRH = s => { if(!s&&s!==0) return 0; const c=String(s).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.'); return parseFloat(c)||0; };
-const capMes = s => { if(!s) return ''; const m=String(s).split('/')[0].trim(); return m.charAt(0).toUpperCase()+m.slice(1).toLowerCase(); };
-const normData = s => {
+
+const cdoRH = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490',borderColor:'#2a2a2a',borderWidth:1} },
+  scales:{ x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',font:{size:9}}}, y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',font:{size:10}}} }
+};
+
+const parsePtBRRH = s => {
+  if(!s && s!==0) return 0;
+  const c = String(s).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.');
+  return parseFloat(c)||0;
+};
+
+// Normalizar data: "agosto/2024" → "ago. de 2024", "2024-08-01" → "ago. de 2024"
+const normDataRH = s => {
   if(!s) return '';
   const str = String(s).trim();
-
-  // Já está no formato "agosto/2024" ou "janeiro/2026" — só normalizar abreviatura
   const mesesPT = {
     'janeiro':'jan.','fevereiro':'fev.','março':'mar.','abril':'abr.',
     'maio':'mai.','junho':'jun.','julho':'jul.','agosto':'ago.',
     'setembro':'set.','outubro':'out.','novembro':'nov.','dezembro':'dez.'
   };
-  const matchNome = str.match(/^(\w+)\/(\d{4})$/i);
-  if(matchNome) {
-    const mes = matchNome[1].toLowerCase();
-    const ano = matchNome[2];
-    const abrev = mesesPT[mes] || mes.substring(0,3)+'.';
-    return abrev + ' de ' + ano;
+  // Formato "agosto/2024"
+  const m1 = str.match(/^(\w+)\/(\d{4})$/i);
+  if(m1) {
+    const mes = m1[1].toLowerCase(), ano = m1[2];
+    return (mesesPT[mes]||mes.substring(0,3)+'.')+' de '+ano;
   }
-
-  // Formato "jan. de 2024" já correto — retornar como está
-  if(/\w+\. de \d{4}/.test(str)) return str;
-
-  // Tentar como data ISO "2024-08-01"
+  // Formato ISO "2024-08-01"
   try {
-    const d = new Date(str);
+    const d = new Date(str+'T12:00:00Z');
     if(!isNaN(d)) {
-      const meses = ['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'];
-      return meses[d.getUTCMonth()] + ' de ' + d.getUTCFullYear();
+      const ms=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'];
+      return ms[d.getUTCMonth()]+' de '+d.getUTCFullYear();
     }
-  } catch(e) {}
-
+  } catch(e){}
   return str;
 };
 
-const cdoRH = {
-  responsive:true, maintainAspectRatio:false,
-  plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490',borderColor:'#2a2a2a',borderWidth:1} },
-  scales:{ x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',font:{size:10}}}, y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',font:{size:10}}} }
-};
-
-// ══ API ══
-async function fetchTab(tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_RH}/values/${encodeURIComponent(tabName)}?key=${API_KEY}`;
-  const r = await fetch(url);
-  if(!r.ok) throw new Error(`Erro ${r.status} ao buscar ${tabName}`);
-  const d = await r.json();
-  return d.values || [];
-}
-
-function rowsToObj(rows) {
+function rowsToObjRH(rows) {
   if(!rows||rows.length<2) return [];
-  const h = rows[0];
-  return rows.slice(1).map(row => {
-    const o={};
-    h.forEach((k,i)=>{ o[k]=row[i]||''; });
-    return o;
-  });
+  const h=rows[0];
+  return rows.slice(1).map(row=>{ const o={}; h.forEach((k,i)=>{ o[k.trim()]=row[i]||''; }); return o; });
 }
 
-// ══ LOAD ══
+async function fetchTabRH(tabName) {
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_RH}/values/${encodeURIComponent(tabName)}?key=${API_KEY}`;
+  const r=await fetch(url);
+  if(!r.ok) throw new Error(`Erro ${r.status} ao buscar ${tabName}`);
+  return (await r.json()).values||[];
+}
+
+// ── LOAD RH ──
 async function loadRH() {
   LIVE_RH_RH_loaded = true;
-  // Mostrar loading só se aba RH estiver ativa
   const overlay = document.getElementById('loading-overlay');
-  if(overlay && TAB_ATIVO === 'rh') overlay.style.display='flex';
+  if(overlay) { overlay.style.display='flex'; overlay.innerHTML=`<div style="text-align:center"><div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--t)">Carregando RH</div><div style="font-size:11px;color:var(--t3)">Conectando ao Google Sheets...</div></div>`; }
+
   try {
-    const tabs = await Promise.all(Object.values(ABAS).map(t => fetchTab(t).catch(()=>[])));
+    const tabs = await Promise.all(Object.values(ABAS_RH).map(t=>fetchTabRH(t).catch(()=>[])));
     const [npsR,turnR,assR,desempR,endoR,pdiR,recR,reunR,termR,towR] = tabs;
 
-    // NPS
-    LIVE_RH.nps = rowsToObj(npsR).map(r=>({ mes: normData(r['Mês']), nota: parseFloat(r['Nota'])||0 })).filter(r=>r.nota>0);
+    LIVE_RH.nps = rowsToObjRH(npsR).map(r=>({ mes:normDataRH(r['Mês']), nota:parseFloat(r['Nota'])||0 })).filter(r=>r.nota>0);
 
-    // Turnover
-    LIVE_RH.turnover = rowsToObj(turnR).map(r=>({ mes: normData(r['Mês']), taxa: parseFloat(r['Turnover'])*100||0 }));
+    LIVE_RH.turnover = rowsToObjRH(turnR).map(r=>({ mes:normDataRH(r['Mês']), taxa:parseFloat(r['Turnover'])*100||0 }));
 
-    // Assiduidade
-    LIVE_RH.assiduidade = rowsToObj(assR).map(r=>({
-      mes: normData(r['Mês']), colaborador: r['Colaborador']||'',
-      faltas: parseFloat(r['Número de Faltas'])||0,
-      atm: parseFloat(r['Número de ATM'])||0,
-      inss: parseFloat(r['Afastamento INSS'])||0,
+    LIVE_RH.assiduidade = rowsToObjRH(assR).map(r=>({
+      mes:normDataRH(r['Mês']), colaborador:r['Colaborador']||'',
+      faltas:parseFloat(r['Número de Faltas'])||0,
+      atm:parseFloat(r['Número de ATM'])||0,
+      inss:parseFloat(r['Afastamento INSS'])||0,
     })).filter(r=>r.colaborador);
 
-    // Desempenho
-    LIVE_RH.desempenho = rowsToObj(desempR).map(r=>({
-      mes: normData(r['Mês']), avaliador: r['Avaliador']||'', colaborador: r['Colaborador']||'',
-      setor: r['Setor']||'', nota: parseFloat(r['Avaliação de Desempenho'])||0,
+    LIVE_RH.desempenho = rowsToObjRH(desempR).map(r=>({
+      mes:normDataRH(r['Mês']), avaliador:r['Avaliador']||'',
+      colaborador:r['Colaborador']||'', setor:r['Setor']||'',
+      nota:parseFloat(r['Avaliação de Desempenho'])||0,
     })).filter(r=>r.colaborador&&r.nota>0);
 
-    // Endomarketing
-    LIVE_RH.endomkt = rowsToObj(endoR).map(r=>({
-      mes: normData(r['MÊS']), acao: r['Ação']||'', custo: parsePtBRRH(r['Custo da Ação']),
-      orcamento: parsePtBRRH(r['Orçamento Previsto']),
+    LIVE_RH.endomkt = rowsToObjRH(endoR).map(r=>({
+      mes:normDataRH(r['MÊS']), acao:r['Ação']||'',
+      custo:parsePtBRRH(r['Custo da Ação']),
     })).filter(r=>r.acao);
 
-    // PDI
-    LIVE_RH.pdi = rowsToObj(pdiR).map(r=>({
-      mes: normData(r['Mês']), colaborador: r['Colaborador']||'',
-      tarefa: r['Tarefa']||'', curso: r['Curso/Livro']||'',
-      custo: parsePtBRRH(r['Custo']),
-      entregue: r['Tarefa Entregue?']==='Sim',
-      atrasado: r['Tarefa Foi Entregue Atrasada?']==='Sim',
+    LIVE_RH.pdi = rowsToObjRH(pdiR).map(r=>({
+      mes:normDataRH(r['Mês']), colaborador:r['Colaborador']||'',
+      tarefa:r['Tarefa']||'', curso:r['Curso/Livro']||'',
+      custo:parsePtBRRH(r['Custo']),
+      entregue:r['Tarefa Entregue?']==='Sim',
+      atrasado:r['Tarefa Foi Entregue Atrasada?']==='Sim',
     })).filter(r=>r.colaborador);
 
-    // Recrutamento
-    LIVE_RH.rec = rowsToObj(recR).map(r=>({
-      mes: normData(r['Mês']), emp: r['Empreendimento']||'',
-      cargo: r['Vagas Abertas']||'', qtd: parseFloat(r['Quantidade'])||0,
-      tempo: parseFloat(r['Tempo entre demanda por contratação e contratação efetivada '])||0,
-      entrevistas: parseFloat(r['Entrevistas'])||0,
-      aprovados: parseFloat(r['Candidatos Aprovados'])||0,
-    })).filter(r=>r.cargo&&r.cargo!=='nan');
+    LIVE_RH.rec = rowsToObjRH(recR).map(r=>({
+      mes:normDataRH(r['Mês']), emp:r['Empreendimento']||'',
+      cargo:(r['Vagas Abertas']||'').trim(),
+      qtd:parseFloat(r['Quantidade'])||0,
+      tempo:parseFloat(r['Tempo entre demanda por contratação e contratação efetivada']||r['Tempo entre demanda por contratação e contratação efetivada '])||0,
+      entrevistas:parseFloat(r['Entrevistas'])||0,
+      aprovados:parseFloat(r['Candidatos Aprovados'])||0,
+    })).filter(r=>r.cargo&&r.qtd>0);
 
-    // Reuniões
-    LIVE_RH.reunioes = rowsToObj(reunR).map(r=>({
-      mes: normData(r['Mês']), tipo: r['Tipo de Reunião']||'',
-      feitas: parseFloat(r['Reuniões Feitas'])||0,
+    LIVE_RH.reunioes = rowsToObjRH(reunR).map(r=>({
+      mes:normDataRH(r['Mês']), tipo:r['Tipo de Reunião']||'',
+      feitas:parseFloat(r['Reuniões Feitas'])||0,
     })).filter(r=>r.tipo);
 
-    // Termômetro
-    LIVE_RH.termometro = rowsToObj(termR).map(r=>({
-      mes: normData(r['Mês']),
-      total: parsePtBRRH(r['Total']),
-      rmz: parsePtBRRH(r['Op. RMZ']),
-      zo: parsePtBRRH(r['Op. Z.O']),
-      admOp: parsePtBRRH(r['Adm. Op. ']),
-      admGeral: parsePtBRRH(r['Adm. Geral']),
-      rh: parsePtBRRH(r['RH']),
-      comercial: parsePtBRRH(r['Comercial']),
-      academy: parsePtBRRH(r['Academy']),
+    LIVE_RH.termometro = rowsToObjRH(termR).map(r=>({
+      mes:normDataRH(r['Mês']),
+      total:parsePtBRRH(r['Total']), rmz:parsePtBRRH(r['Op. RMZ']),
+      zo:parsePtBRRH(r['Op. Z.O']), admOp:parsePtBRRH(r['Adm. Op. ']),
+      admGeral:parsePtBRRH(r['Adm. Geral']), rh:parsePtBRRH(r['RH']),
+      comercial:parsePtBRRH(r['Comercial']), academy:parsePtBRRH(r['Academy']),
     })).filter(r=>r.total>1000);
 
-    // Faltas Tower
-    LIVE_RH.faltasTower = rowsToObj(towR).map(r=>({
-      mes: normData(r['Mês']),
-      faltas: parseFloat(r['Número de Faltas Z.Tower'])||0,
-      meio: parseFloat(r['Número de colaboradores com 0,5 faltas Z.Tower'])||0,
-      uma: parseFloat(r['Número de colaboradores com 1 falta Z.Tower'])||0,
-      mais: parseFloat(r['Número de colaboradores com mais de 1 falta Z.Tower'])||0,
-    })).filter(r=>r.faltas>0);
-
-    // Montar filtro de meses
     buildMesFilterRH();
-    if(TAB_ATIVO === 'rh') renderAllRH();
+    renderAllRH();
 
-    const now = new Date();
-    const luRH = document.getElementById('last-update-badge');
-    if(luRH) luRH.textContent = `RH atualizado ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-    console.log('✅ RH carregado:', Object.fromEntries(Object.entries(LIVE_RH).map(([k,v])=>[k,v.length])));
+    const now=new Date();
+    const lu=document.getElementById('last-update-badge');
+    if(lu) lu.textContent=`RH atualizado ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    console.log('✅ RH carregado:', Object.fromEntries(Object.entries(LIVE_RH).map(([k,v])=>[k,Array.isArray(v)?v.length:v])));
 
   } catch(err) {
-    console.error('Erro:', err);
     console.error('Erro RH:', err);
-    const errOverlay = document.getElementById('loading-overlay');
-    if(errOverlay) errOverlay.innerHTML = `<div style="text-align:center"><div style="font-size:24px;margin-bottom:10px">⚠️</div><div style="font-size:13px;color:#c07070;margin-bottom:10px">${err.message}</div><button onclick="loadRH()" style="padding:6px 14px;background:var(--red);color:#fff;border:none;border-radius:5px;cursor:pointer">Tentar novamente</button></div>`;
-    return;
   }
-  document.getElementById('loading-overlay').style.display='none';
+  if(overlay) overlay.style.display='none';
 }
 
-// ══ FILTRO ══
-// ── FILTRO RH: ANO + MÊS ──
-let ANO_RH = 'todos';
-
+// ── FILTRO RH ──
 function buildMesFilterRH() {
-  const anosSet = new Set();
-  const mesesPorAno = {}; // {ano: Set<mes>}
-
-  Object.values(LIVE_RH).forEach(arr => {
+  const anosSet=new Set(), mesesPorAno={};
+  Object.values(LIVE_RH).forEach(arr=>{
     if(!Array.isArray(arr)) return;
-    arr.forEach(r => {
-      if(!r || !r.mes) return;
-      // r.mes vem como "ago. de 2024" ou "Jan/2024"
-      const m = r.mes;
-      // Extrair ano
-      const anoMatch = m.match(/\d{4}/);
-      const ano = anoMatch ? anoMatch[0] : '?';
+    arr.forEach(r=>{
+      if(!r||!r.mes) return;
+      const match=r.mes.match(/\d{4}/);
+      const ano=match?match[0]:'?';
       anosSet.add(ano);
-      if(!mesesPorAno[ano]) mesesPorAno[ano] = new Set();
-      mesesPorAno[ano].add(m);
+      if(!mesesPorAno[ano]) mesesPorAno[ano]=new Set();
+      mesesPorAno[ano].add(r.mes);
     });
   });
 
-  // Montar filtro de ANO
-  const navAno = document.getElementById('ano-filter-rh');
-  if(navAno) {
-    navAno.innerHTML = '';
-    const btnA = document.createElement('button');
-    btnA.className = 'mf active'; btnA.textContent = 'Todos';
-    btnA.onclick = () => setAnoRH('todos', btnA);
-    navAno.appendChild(btnA);
-    [...anosSet].sort().forEach(a => {
-      const btn = document.createElement('button');
-      btn.className = 'mf'; btn.textContent = a;
-      btn.onclick = () => setAnoRH(a, btn);
-      navAno.appendChild(btn);
-    });
+  const navAno=document.getElementById('ano-filter-rh');
+  if(navAno){
+    navAno.innerHTML='';
+    const b=document.createElement('button'); b.className='mf active'; b.textContent='Todos';
+    b.onclick=()=>setAnoRH('todos',b); navAno.appendChild(b);
+    [...anosSet].sort().forEach(a=>{ const btn=document.createElement('button'); btn.className='mf'; btn.textContent=a; btn.onclick=()=>setAnoRH(a,btn); navAno.appendChild(btn); });
   }
-
-  // Montar filtro de MÊS
   buildMesesRH(mesesPorAno);
+  window._mesesPorAnoRH = mesesPorAno;
 }
 
 function buildMesesRH(mesesPorAno) {
-  const navMes = document.getElementById('mes-filter-rh');
+  const navMes=document.getElementById('mes-filter-rh');
   if(!navMes) return;
-  navMes.innerHTML = '';
+  navMes.innerHTML='';
+  const b=document.createElement('button'); b.className='mf active'; b.textContent='Todos';
+  b.onclick=()=>setMesRH('todos',b); navMes.appendChild(b);
 
-  const btnM = document.createElement('button');
-  btnM.className = 'mf active'; btnM.textContent = 'Todos';
-  btnM.onclick = () => setMesRH('todos', btnM);
-  navMes.appendChild(btnM);
+  let meses=[];
+  if(ANO_RH==='todos') { Object.values(mesesPorAno).forEach(s=>s.forEach(m=>meses.push(m))); }
+  else { meses=mesesPorAno[ANO_RH]?[...mesesPorAno[ANO_RH]]:[]; }
 
-  // Filtrar meses pelo ano ativo
-  let meses = [];
-  if(ANO_RH === 'todos') {
-    Object.values(mesesPorAno).forEach(s => s.forEach(m => meses.push(m)));
-  } else {
-    meses = mesesPorAno[ANO_RH] ? [...mesesPorAno[ANO_RH]] : [];
-  }
-
-  // Ordenar meses
-  meses = [...new Set(meses)].sort((a,b) => {
-    const getDate = s => { try { return new Date(s.replace(/(\w+)\. de (\d+)/, '$1 $2')); } catch(e) { return 0; } };
-    return getDate(a) - getDate(b);
+  const ordemMes=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'];
+  meses=[...new Set(meses)].sort((a,b)=>{
+    const getOrd=s=>{ const m=s.match(/^(\w+)\. de (\d+)/); if(!m)return 9999; return parseInt(m[2])*12+ordemMes.indexOf(m[1]+'.'); };
+    return getOrd(a)-getOrd(b);
   });
 
-  meses.forEach(m => {
-    const btn = document.createElement('button');
-    btn.className = 'mf';
-    // Abreviar: "ago. de 2024" → "ago/24"
-    const abrev = m.replace(/(\w+)\. de (\d{4})/, (_, mes, ano) => mes+'/'+ano.slice(2))
-                   .replace(/(\w+)\/(\d{4})/, (_, mes, ano) => mes+'/'+ano.slice(2));
-    btn.textContent = abrev.length > 8 ? abrev.substring(0, 8) : abrev;
-    btn.title = m;
-    btn.onclick = () => setMesRH(m, btn);
-    navMes.appendChild(btn);
+  meses.forEach(m=>{
+    const btn=document.createElement('button'); btn.className='mf';
+    const abrev=m.replace(/(\w+)\. de (\d{4})/,(_,mes,ano)=>mes+'/'+ano.slice(2));
+    btn.textContent=abrev; btn.title=m;
+    btn.onclick=()=>setMesRH(m,btn); navMes.appendChild(btn);
   });
 }
 
-function setAnoRH(ano, btn) {
-  ANO_RH = ano;
-  MES_RH = 'todos';
-  document.querySelectorAll('#ano-filter-rh .mf').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // Reconstruir filtro de meses para o ano selecionado
-  const mesesPorAno = {};
-  Object.values(LIVE_RH).forEach(arr => {
-    if(!Array.isArray(arr)) return;
-    arr.forEach(r => {
-      if(!r||!r.mes) return;
-      const anoMatch = r.mes.match(/\d{4}/);
-      const a = anoMatch ? anoMatch[0] : '?';
-      if(!mesesPorAno[a]) mesesPorAno[a] = new Set();
-      mesesPorAno[a].add(r.mes);
-    });
-  });
-  buildMesesRH(mesesPorAno);
-  renderAllRH();
+function setAnoRH(ano,btn){
+  ANO_RH=ano; MES_RH='todos';
+  document.querySelectorAll('#ano-filter-rh .mf').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  buildMesesRH(window._mesesPorAnoRH||{});
+  resetDrawersRH(); renderAllRH();
 }
 
-function setMesRH(mes, btn) {
-  MES_RH = mes;
-  document.querySelectorAll('.mf').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  Object.keys(CHS).forEach(k=>dc(k));
-  openDrawersRH.forEach(id=>{const d=document.getElementById(id);if(d)d.classList.remove('open');});
+function setMesRH(mes,btn){
+  MES_RH=mes;
+  document.querySelectorAll('#mes-filter-rh .mf').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  resetDrawersRH(); renderAllRH();
+}
+
+function resetDrawersRH(){
+  openDrawersRH.forEach(id=>{ const d=document.getElementById(id); if(d)d.classList.remove('open'); });
   openDrawersRH.clear();
-  document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
-  renderAllRH();
+  document.querySelectorAll('#pane-rh .card').forEach(c=>c.classList.remove('active'));
+  Object.keys(CHS_RH).forEach(k=>dcRH(k));
 }
 
-function filtRH(arr, campo='mes') {
-  let result = arr;
-  if(ANO_RH !== 'todos') {
-    result = result.filter(r => r[campo] && r[campo].includes(ANO_RH));
-  }
-  if(MES_RH !== 'todos') {
-    result = result.filter(r => r[campo] === MES_RH);
-  }
-  return result;
+// filtRH — retorna dados filtrados MAS mantém todos para comparação nos gráficos
+function filtRH(arr) {
+  if(!Array.isArray(arr)) return [];
+  let r=arr;
+  if(ANO_RH!=='todos') r=r.filter(x=>x.mes&&x.mes.includes(ANO_RH));
+  if(MES_RH!=='todos') r=r.filter(x=>x.mes===MES_RH);
+  return r;
 }
 
-// ══ TOGGLE ══
-function toggleRH(id) {
+// ── TOGGLE RH ──
+function toggleRH(id){
   const d=document.getElementById(id);
-  const card=d.previousElementSibling?.querySelector?.('.card.active')||d.previousElementSibling;
+  if(!d) return;
   if(openDrawersRH.has(id)){
     d.classList.remove('open'); openDrawersRH.delete(id);
-    d.parentElement?.querySelectorAll('.card')?.forEach(c=>c.classList.remove('active'));
+    d.previousElementSibling?.querySelectorAll?.('.card')?.forEach(c=>c.classList.remove('active'));
   } else {
     d.classList.add('open'); openDrawersRH.add(id);
-    setTimeout(()=>buildChart(id),60);
+    setTimeout(()=>buildChartRH(id),60);
   }
 }
 
-// ══ RENDER TODOS OS KPIs ══
-function renderAllRH() {
-  renderNps();
-  renderTurnover();
-  renderAssiduidade();
-  renderRecrutamento();
-  renderDesempenho();
-  renderEndo();
-  renderPdi();
-  renderReunioes();
-  renderTermometro();
-}
-
-const setElRH = (id,val,sub) => {
+// ── SETEL RH ──
+const setElRH=(id,val,sub)=>{
   const e=document.getElementById(id); if(e) e.textContent=val;
   const es=document.getElementById(id+'-s'); if(es&&sub!==undefined) es.textContent=sub;
 };
 
-// NPS
-function renderNps() {
-  const d = filtRH(LIVE_RH.nps||[]);
-  if(!d.length){ setElRH('nps-score','—','sem dados'); return; }
-  const ultimo = d[d.length-1];
-  const melhor = d.reduce((a,b)=>b.nota>a.nota?b:a,d[0]);
-  setElRH('nps-score', ultimo.nota.toFixed(2), '');
-  setElRH('nps-best', melhor.nota.toFixed(2), melhor.mes);
-  setElRH('nps-last', ultimo.mes, 'último período');
-  setElRH('nps-count', d.length, 'medições');
-  if(openDrawersRH.has('nps-detail')) buildChart('nps-detail');
+// ── RENDER ALL ──
+function renderAllRH(){
+  renderRhNps(); renderRhTurnover(); renderRhAssiduidade();
+  renderRhRec(); renderRhDesemp(); renderRhEndo();
+  renderRhPdi(); renderRhReunioes(); renderRhTerm();
 }
 
-// Turnover
-function renderTurnover() {
-  const d = filtRH(LIVE_RH.turnover||[]);
-  if(!d.length){ setElRH('turn-atual','—','sem dados'); return; }
-  const ultimo = d[d.length-1];
-  const media = d.reduce((a,b)=>a+b.taxa,0)/d.length;
-  const max = d.reduce((a,b)=>b.taxa>a.taxa?b:a,d[0]);
-  const zeros = d.filter(r=>r.taxa===0).length;
-  setElRH('turn-atual', ultimo.taxa.toFixed(1), ultimo.mes);
-  setElRH('turn-media', media.toFixed(1), 'média histórica');
-  setElRH('turn-max', max.taxa.toFixed(1), max.mes);
-  setElRH('turn-zero', zeros, 'meses');
-  if(openDrawersRH.has('turn-detail')) buildChart('turn-detail');
+function renderRhNps(){
+  const all=LIVE_RH.nps||[], d=filtRH(all);
+  const src=d.length?d:all;
+  if(!src.length){ setElRH('rh-nps-score','—','sem dados'); return; }
+  const ult=src[src.length-1], best=src.reduce((a,b)=>b.nota>a.nota?b:a,src[0]);
+  setElRH('rh-nps-score',ult.nota.toFixed(2),''); setElRH('rh-nps-best',best.nota.toFixed(2),best.mes);
+  setElRH('rh-nps-last',ult.mes,''); setElRH('rh-nps-count',src.length,'medições');
+  if(openDrawersRH.has('rh-nps')) buildChartRH('rh-nps');
 }
 
-// Assiduidade
-function renderAssiduidade() {
-  const d = filtRH(LIVE_RH.assiduidade||[]);
-  const tower = filtRH(LIVE_RH.faltasTower||[]);
-  const totalFaltas = d.reduce((a,r)=>a+r.faltas,0);
-  const totalAtm = d.reduce((a,r)=>a+r.atm,0);
-  const totalInss = d.reduce((a,r)=>a+r.inss,0);
-  const ultimoTower = tower[tower.length-1];
-  setElRH('ass-faltas', totalFaltas.toFixed(1), d.length+' colaboradores');
-  setElRH('ass-atm', totalAtm.toFixed(1), 'meio expediente');
-  setElRH('ass-inss', totalInss, 'dias afastados');
-  setElRH('ass-tower', ultimoTower?ultimoTower.faltas.toFixed(1):'—', ultimoTower?ultimoTower.mes:'sem dados');
-  const tb=document.getElementById('tb-ass');
-  if(tb){ tb.innerHTML=''; d.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.mes}</td><td style="color:var(--t)">${r.colaborador}</td><td class="r">${r.faltas}</td><td class="r">${r.atm}</td><td class="r">${r.inss}</td>`; tb.appendChild(tr); }); }
-  if(openDrawersRH.has('ass-detail')) buildChart('ass-detail');
+function renderRhTurnover(){
+  const all=LIVE_RH.turnover||[], d=filtRH(all);
+  const src=d.length?d:all;
+  if(!src.length){ setElRH('rh-turn-atual','—',''); return; }
+  const ult=src[src.length-1], media=src.reduce((a,b)=>a+b.taxa,0)/src.length;
+  const max=src.reduce((a,b)=>b.taxa>a.taxa?b:a,src[0]), zeros=src.filter(r=>r.taxa===0).length;
+  setElRH('rh-turn-atual',ult.taxa.toFixed(1),ult.mes); setElRH('rh-turn-media',media.toFixed(1),'média');
+  setElRH('rh-turn-max',max.taxa.toFixed(1),max.mes); setElRH('rh-turn-zero',zeros,'meses');
+  if(openDrawersRH.has('rh-turn')) buildChartRH('rh-turn');
 }
 
-// Recrutamento
-function renderRecrutamento() {
-  const d = filtRH(LIVE_RH.rec||[]);
-  const vagas = d.reduce((a,r)=>a+r.qtd,0);
-  const entre = d.reduce((a,r)=>a+r.entrevistas,0);
-  const aprov = d.reduce((a,r)=>a+r.aprovados,0);
-  const taxa = entre>0?Math.round(aprov/entre*100):0;
-  setElRH('rec-vagas', vagas, d.length+' registros');
-  setElRH('rec-entre', entre, 'realizadas');
-  setElRH('rec-aprov', aprov, 'contratados');
-  setElRH('rec-taxa', taxa+'%', 'efetividade');
+function renderRhAssiduidade(){
+  const all=LIVE_RH.assiduidade||[], d=filtRH(all);
+  const src=d.length?d:all;
+  const totalF=src.reduce((a,r)=>a+r.faltas,0), totalA=src.reduce((a,r)=>a+r.atm,0);
+  const totalI=src.reduce((a,r)=>a+r.inss,0), comFalta=src.filter(r=>r.faltas>0).length;
+  setElRH('rh-ass-faltas',totalF.toFixed(1),src.length+' registros');
+  setElRH('rh-ass-atm',totalA.toFixed(1),'meio período');
+  setElRH('rh-ass-inss',totalI,'dias afastados');
+  setElRH('rh-ass-colab',comFalta,'pessoas');
+  const tb=document.getElementById('tb-rh-ass');
+  if(tb){ tb.innerHTML=''; src.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.mes}</td><td style="color:var(--t)">${r.colaborador}</td><td class="r">${r.faltas}</td><td class="r">${r.atm}</td><td class="r">${r.inss}</td>`; tb.appendChild(tr); }); }
+  // Top por faltas
+  const top=document.getElementById('rh-ass-top');
+  if(top){
+    const cnt={}; src.forEach(r=>{ if(r.faltas>0) cnt[r.colaborador]=(cnt[r.colaborador]||0)+r.faltas; });
+    const sorted=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const mx=sorted[0]?.[1]||1;
+    top.innerHTML=sorted.map(([n,v])=>`<div class="pr"><div class="pr-lbl">${n.split(' ')[0]}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(v/mx*100)}%"></div></div><div class="pr-val">${v}</div></div>`).join('');
+  }
+  if(openDrawersRH.has('rh-ass')) buildChartRH('rh-ass');
+}
+
+function renderRhRec(){
+  const all=LIVE_RH.rec||[], d=filtRH(all);
+  const src=d.length?d:all;
+  const vagas=src.reduce((a,r)=>a+r.qtd,0), entre=src.reduce((a,r)=>a+r.entrevistas,0);
+  const aprov=src.reduce((a,r)=>a+r.aprovados,0), taxa=entre>0?Math.round(aprov/entre*100):0;
+  const tempos=src.filter(r=>r.tempo>0).map(r=>r.tempo);
+  const tempoMed=tempos.length?Math.round(tempos.reduce((a,b)=>a+b,0)/tempos.length):0;
+  setElRH('rh-rec-vagas',vagas,src.length+' registros');
+  setElRH('rh-rec-entre',entre,'realizadas');
+  setElRH('rh-rec-aprov',aprov,'contratados');
+  setElRH('rh-rec-taxa',taxa+'%','efetividade');
+  setElRH('rh-rec-tempo',tempoMed>0?tempoMed+'d':'—','dias em média');
   // Cargos
-  const cargos={};
-  d.forEach(r=>{if(r.cargo&&r.cargo!=='0') cargos[r.cargo]=(cargos[r.cargo]||0)+r.qtd;});
-  const el=document.getElementById('rec-cargos');
-  if(el){
-    const sorted=Object.entries(cargos).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    const mx=sorted[0]?.[1]||1;
-    el.innerHTML=sorted.map(([c,n])=>`<div class="pr"><div class="pr-lbl">${c}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(n/mx*100)}%"></div></div><div class="pr-val">${n}</div></div>`).join('');
-  }
-  if(openDrawersRH.has('rec-detail')) buildChart('rec-detail');
+  const cargos={}; src.forEach(r=>{ if(r.cargo) cargos[r.cargo]=(cargos[r.cargo]||0)+r.qtd; });
+  const el=document.getElementById('rh-rec-cargos');
+  if(el){ const s=Object.entries(cargos).sort((a,b)=>b[1]-a[1]).slice(0,6); const mx=s[0]?.[1]||1; el.innerHTML=s.map(([c,n])=>`<div class="pr"><div class="pr-lbl">${c}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(n/mx*100)}%"></div></div><div class="pr-val">${n}</div></div>`).join(''); }
+  // Por empreendimento
+  const emps={}; src.forEach(r=>{ if(r.emp) emps[r.emp]=(emps[r.emp]||0)+r.qtd; });
+  const el2=document.getElementById('rh-rec-emps');
+  if(el2){ const s=Object.entries(emps).sort((a,b)=>b[1]-a[1]); const mx=s[0]?.[1]||1; el2.innerHTML=s.map(([e,n])=>`<div class="pr"><div class="pr-lbl">${e}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(n/mx*100)}%;background:#C9943A"></div></div><div class="pr-val">${n}</div></div>`).join(''); }
+  if(openDrawersRH.has('rh-rec')) buildChartRH('rh-rec');
 }
 
-// Desempenho
-function renderDesempenho() {
-  const d = filtRH(LIVE_RH.desempenho||[]);
-  if(!d.length){ setElRH('desemp-media','—','sem dados'); return; }
-  const media = d.reduce((a,r)=>a+r.nota,0)/d.length;
-  // Última rodada = último mês com dados
-  const meses=[...new Set(d.map(r=>r.mes))].sort();
-  const ultimaMes = meses[meses.length-1];
-  const ultRodada = d.filter(r=>r.mes===ultimaMes);
-  setElRH('desemp-media', (media*100).toFixed(1)+'%', 'média geral');
-  setElRH('desemp-count', ultRodada.length, ultimaMes);
-  setElRH('desemp-rounds', meses.length, 'rodadas');
-  // Tabela última rodada ordenada
-  const tb=document.getElementById('tb-desemp');
-  if(tb){
-    tb.innerHTML='';
-    [...ultRodada].sort((a,b)=>b.nota-a.nota).forEach(r=>{
-      const tr=document.createElement('tr');
-      const cor=r.nota>=0.9?'#7abf7a':r.nota>=0.75?'#d4a855':'#c07070';
-      tr.innerHTML=`<td style="color:var(--t);font-weight:500">${r.colaborador}</td><td>${r.setor}</td><td>${r.avaliador}</td><td class="r"><span style="color:${cor};font-weight:700">${(r.nota*100).toFixed(1)}%</span></td>`;
-      tb.appendChild(tr);
-    });
-  }
-  if(openDrawersRH.has('desemp-detail')) buildChart('desemp-detail');
+function renderRhDesemp(){
+  const all=LIVE_RH.desempenho||[], d=filtRH(all);
+  const src=d.length?d:all;
+  if(!src.length){ setElRH('rh-desemp-media','—',''); return; }
+  const media=src.reduce((a,r)=>a+r.nota,0)/src.length;
+  const meses=[...new Set(src.map(r=>r.mes))]; const top=src.filter(r=>r.nota>=0.9).length;
+  setElRH('rh-desemp-media',(media*100).toFixed(1)+'%','média');
+  setElRH('rh-desemp-count',src.length,'avaliações');
+  setElRH('rh-desemp-top',top,'colaboradores');
+  setElRH('rh-desemp-rounds',meses.length,'rodadas');
+  const tb=document.getElementById('tb-rh-desemp');
+  if(tb){ tb.innerHTML=''; [...src].sort((a,b)=>b.nota-a.nota).slice(0,20).forEach(r=>{ const cor=r.nota>=0.9?'#7abf7a':r.nota>=0.75?'#d4a855':'#c07070'; const tr=document.createElement('tr'); tr.innerHTML=`<td style="color:var(--t);font-weight:500">${r.colaborador}</td><td>${r.setor}</td><td>${r.avaliador}</td><td class="r"><span style="color:${cor};font-weight:700">${(r.nota*100).toFixed(1)}%</span></td>`; tb.appendChild(tr); }); }
+  if(openDrawersRH.has('rh-desemp')) buildChartRH('rh-desemp');
 }
 
-// Endomarketing
-function renderEndo() {
-  const d = filtRH(LIVE_RH.endomkt||[]);
-  const total = d.reduce((a,r)=>a+r.custo,0);
-  const media = d.length>0?total/d.length:0;
-  const topAcao = Object.entries(d.reduce((a,r)=>{a[r.acao]=(a[r.acao]||0)+r.custo;return a},{})).sort((a,b)=>b[1]-a[1])[0];
-  setElRH('endo-total', fR(total), d.length+' ações');
-  setElRH('endo-acoes', d.length, 'realizadas');
-  setElRH('endo-maior', topAcao?topAcao[0].substring(0,20)+(topAcao[0].length>20?'…':''):'—', topAcao?fR(topAcao[1]):'');
-  setElRH('endo-media', fR(media), 'por ação');
-  // Top ações
-  const el=document.getElementById('endo-top-acoes');
-  if(el){
-    const acaoMap={};
-    d.forEach(r=>{acaoMap[r.acao]=(acaoMap[r.acao]||0)+r.custo;});
-    const sorted=Object.entries(acaoMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    const mx=sorted[0]?.[1]||1;
-    el.innerHTML=sorted.map(([a,c])=>`<div class="pr"><div class="pr-lbl">${a}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(c/mx*100)}%;background:#C9943A"></div></div><div class="pr-val">${fR(c)}</div></div>`).join('');
-  }
-  if(openDrawersRH.has('endo-detail')) buildChart('endo-detail');
+function renderRhEndo(){
+  const all=LIVE_RH.endomkt||[], d=filtRH(all);
+  const src=d.length?d:all;
+  const total=src.reduce((a,r)=>a+r.custo,0), media=src.length?total/src.length:0;
+  const acaoMap={}; src.forEach(r=>{ acaoMap[r.acao]=(acaoMap[r.acao]||0)+r.custo; });
+  const top=Object.entries(acaoMap).sort((a,b)=>b[1]-a[1])[0];
+  setElRH('rh-endo-total',fRRH(total),src.length+' ações');
+  setElRH('rh-endo-acoes',src.length,'realizadas');
+  setElRH('rh-endo-maior',top?top[0].substring(0,22)+(top[0].length>22?'…':''):'—',top?fRRH(top[1]):'');
+  setElRH('rh-endo-media',fRRH(media),'por ação');
+  const topEl=document.getElementById('rh-endo-top');
+  if(topEl){ const s=Object.entries(acaoMap).sort((a,b)=>b[1]-a[1]).slice(0,6); const mx=s[0]?.[1]||1; topEl.innerHTML=s.map(([a,c])=>`<div class="pr"><div class="pr-lbl">${a}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(c/mx*100)}%;background:#C9943A"></div></div><div class="pr-val">${fRRH(c)}</div></div>`).join(''); }
+  const tb=document.getElementById('tb-rh-endo');
+  if(tb){ tb.innerHTML=''; src.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.mes}</td><td style="color:var(--t)">${r.acao}</td><td class="r">${fRRH(r.custo)}</td>`; tb.appendChild(tr); }); }
+  if(openDrawersRH.has('rh-endo')) buildChartRH('rh-endo');
 }
 
-// PDI
-function renderPdi() {
-  const d = filtRH(LIVE_RH.pdi||[]);
-  const entregues = d.filter(r=>r.entregue).length;
-  const atrasados = d.filter(r=>r.atrasado).length;
-  const custo = d.reduce((a,r)=>a+r.custo,0);
-  setElRH('pdi-count', d.length, 'tarefas');
-  setElRH('pdi-entregues', entregues, Math.round(d.length>0?entregues/d.length*100:0)+'% de entrega');
-  setElRH('pdi-atrasados', atrasados, 'entregas tardias');
-  setElRH('pdi-custo', custo>0?fR(custo):'R$ 0', 'investido');
-  if(openDrawersRH.has('pdi-detail')) buildChart('pdi-detail');
+function renderRhPdi(){
+  const all=LIVE_RH.pdi||[], d=filtRH(all);
+  const src=d.length?d:all;
+  const ent=src.filter(r=>r.entregue).length, atras=src.filter(r=>r.atrasado).length;
+  const custo=src.reduce((a,r)=>a+r.custo,0);
+  setElRH('rh-pdi-count',src.length,'tarefas');
+  setElRH('rh-pdi-entregues',ent,'');
+  setElRH('rh-pdi-pct',src.length?Math.round(ent/src.length*100)+'% entregues':'');
+  setElRH('rh-pdi-atrasados',atras,'tardias');
+  setElRH('rh-pdi-custo',custo>0?fRRH(custo):'R$ 0','');
+  if(openDrawersRH.has('rh-pdi')) buildChartRH('rh-pdi');
 }
 
-// Reuniões
-function renderReunioes() {
-  const d = filtRH(LIVE_RH.reunioes||[]);
-  const total = d.reduce((a,r)=>a+r.feitas,0);
-  const tipo = t => d.filter(r=>r.tipo&&r.tipo.toLowerCase().includes(t)).reduce((a,r)=>a+r.feitas,0);
-  const um1 = tipo('1 a 1 rh + líder');
-  const cult = tipo('cultura');
-  const trei = tipo('treinamento');
-  setElRH('reun-total', total, 'realizadas');
-  setElRH('reun-1a1', um1, 'reuniões');
-  setElRH('reun-cult', cult, 'reuniões');
-  setElRH('reun-trei', trei, 'treinamentos');
-  if(openDrawersRH.has('reun-detail')) buildChart('reun-detail');
+function renderRhReunioes(){
+  const all=LIVE_RH.reunioes||[], d=filtRH(all);
+  const src=d.length?d:all;
+  const total=src.reduce((a,r)=>a+r.feitas,0);
+  const tipo=t=>src.filter(r=>r.tipo&&r.tipo.toLowerCase().includes(t)).reduce((a,r)=>a+r.feitas,0);
+  setElRH('rh-reun-total',total,'reuniões');
+  setElRH('rh-reun-1a1',tipo('1 a 1 rh + líder'),'');
+  setElRH('rh-reun-cult',tipo('cultura'),'');
+  setElRH('rh-reun-trei',tipo('treinamento'),'');
+  if(openDrawersRH.has('rh-reun')) buildChartRH('rh-reun');
 }
 
-// Termômetro
-function renderTermometro() {
-  const d = (LIVE_RH.termometro||[]);
-  const ultimo = d[d.length-1];
-  if(!ultimo){ setElRH('term-total','—','sem dados'); return; }
-  setElRH('term-total', fR(ultimo.total), ultimo.mes);
-  setElRH('term-rmz',   fR(ultimo.rmz),   ultimo.mes);
-  setElRH('term-zo',    fR(ultimo.zo),    ultimo.mes);
-  setElRH('term-adm',   fR(ultimo.admGeral), ultimo.mes);
-  setElRH('term-com',   fR(ultimo.comercial), ultimo.mes);
-  // Barras
-  const el=document.getElementById('term-bars');
-  if(el&&ultimo){
-    const setores=[
-      {n:'Op. RMZ',v:ultimo.rmz,c:'#8B2E2E'},
-      {n:'Op. Z.Office',v:ultimo.zo,c:'#C9943A'},
-      {n:'Adm. Op.',v:ultimo.admOp,c:'#5a7a9a'},
-      {n:'Adm. Geral',v:ultimo.admGeral,c:'#4a8c4a'},
-      {n:'RH',v:ultimo.rh,c:'#7a5a9a'},
-      {n:'Comercial',v:ultimo.comercial,c:'#9a7a2a'},
-      {n:'Academy',v:ultimo.academy,c:'#2a7a9a'},
-    ].filter(s=>s.v>0);
-    const mx=Math.max(...setores.map(s=>s.v),1);
-    el.innerHTML='<div class="dt" style="font-size:12px;margin-bottom:10px">Por setor — '+ultimo.mes+'</div>'+
-      setores.map(s=>`<div class="pr"><div class="pr-lbl">${s.n}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(s.v/mx*100)}%;background:${s.c}"></div></div><div class="pr-val" style="min-width:70px">${fR(s.v)}</div></div>`).join('');
-  }
-  if(openDrawersRH.has('term-detail')) buildChart('term-detail');
+function renderRhTerm(){
+  const all=LIVE_RH.termometro||[], d=filtRH(all);
+  const src=d.length?d:all;
+  const ult=src[src.length-1];
+  if(!ult){ setElRH('rh-term-total','—',''); return; }
+  setElRH('rh-term-total',fRRH(ult.total),ult.mes);
+  setElRH('rh-term-rmz',fRRH(ult.rmz),'');
+  setElRH('rh-term-zo',fRRH(ult.zo),'');
+  setElRH('rh-term-adm',fRRH(ult.admGeral),'');
+  setElRH('rh-term-com',fRRH(ult.comercial),'');
+  if(openDrawersRH.has('rh-term')) buildChartRH('rh-term');
 }
 
-// ══ CHARTS ══
-function buildChartRH(id) {
-  if(id==='nps-detail') {
-    dc('cNpsInt');
-    const d=filtRH(LIVE_RH.nps||[]);
-    CHS_RH['cNpsInt']=new Chart(document.getElementById('cNpsInt'),{
+// ── CHARTS RH ── (sempre mostra TODO o histórico + destaca período selecionado)
+function buildChartRH(id){
+  const all_nps=LIVE_RH.nps||[], sel_nps=filtRH(all_nps);
+  const all_turn=LIVE_RH.turnover||[], sel_turn=filtRH(all_turn);
+
+  if(id==='rh-nps'){
+    dcRH('cRhNps');
+    const labels=all_nps.map(r=>r.mes);
+    const dataAll=all_nps.map(r=>r.nota);
+    const dataSel=all_nps.map(r=>sel_nps.find(s=>s.mes===r.mes)?r.nota:null);
+    CHS_RH['cRhNps']=new Chart(document.getElementById('cRhNps'),{
       type:'line',
-      data:{labels:d.map(r=>r.mes),datasets:[{data:d.map(r=>r.nota),borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.08)',tension:.3,fill:true,pointRadius:5,pointBackgroundColor:'#8B2E2E'}]},
-      options:{...cdoRH,scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{min:8,max:10,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>v.toFixed(1)}}}}
+      data:{labels,datasets:[
+        {label:'Todo período',data:dataAll,borderColor:'rgba(139,46,46,.3)',backgroundColor:'transparent',tension:.3,pointRadius:3,spanGaps:true},
+        {label:'Selecionado',data:dataSel,borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.1)',tension:.3,pointRadius:5,pointBackgroundColor:'#8B2E2E',fill:true,spanGaps:false},
+      ]},
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{min:8,max:10,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>v.toFixed(1)}}}}
     });
   }
-  if(id==='turn-detail') {
-    dc('cTurnover');
-    const d=filtRH(LIVE_RH.turnover||[]);
-    CHS_RH['cTurnover']=new Chart(document.getElementById('cTurnover'),{
+
+  if(id==='rh-turn'){
+    dcRH('cRhTurn');
+    const labels=all_turn.map(r=>r.mes), dataAll=all_turn.map(r=>r.taxa);
+    const dataSel=all_turn.map(r=>sel_turn.find(s=>s.mes===r.mes)?r.taxa:null);
+    const mediaAll=dataAll.reduce((a,b)=>a+b,0)/dataAll.length;
+    CHS_RH['cRhTurn']=new Chart(document.getElementById('cRhTurn'),{
       type:'bar',
-      data:{labels:d.map(r=>r.mes),datasets:[{data:d.map(r=>r.taxa),backgroundColor:d.map(r=>r.taxa>10?'#c07070':r.taxa>5?'#d4a855':'#8B2E2E'),borderRadius:3}]},
-      options:{...cdoRH,scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>v+'%'}}}}
+      data:{labels,datasets:[
+        {label:'Todo período',data:dataAll,backgroundColor:'rgba(139,46,46,.2)',borderRadius:3,order:2},
+        {label:'Selecionado',data:dataSel,backgroundColor:dataAll.map(v=>v>10?'#c07070':v>5?'#d4a855':'#8B2E2E'),borderRadius:3,order:1},
+        {label:'Média histórica',data:dataAll.map(()=>mediaAll),type:'line',borderColor:'#C9943A',borderDash:[4,4],pointRadius:0,borderWidth:1.5,order:0},
+      ]},
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>v+'%'}}}}
     });
   }
-  if(id==='ass-detail') {
-    dc('cFaltasTower'); dc('cFaltasDistrib');
-    const tower=filtRH(LIVE_RH.faltasTower||[]).slice(-12);
-    CHS_RH['cFaltasTower']=new Chart(document.getElementById('cFaltasTower'),{
-      type:'line',
-      data:{labels:tower.map(r=>r.mes),datasets:[{label:'Faltas',data:tower.map(r=>r.faltas),borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.08)',tension:.3,fill:true,pointRadius:3}]},
-      options:{...cdoRH,plugins:{...cdoRH.plugins,legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
-    });
-    const ult=tower[tower.length-1];
-    if(ult) {
-      CHS_RH['cFaltasDistrib']=new Chart(document.getElementById('cFaltasDistrib'),{
-        type:'doughnut',
-        data:{labels:['0,5 falta','1 falta','+1 falta'],datasets:[{data:[ult.meio,ult.uma,ult.mais],backgroundColor:['#C9943A','#8B2E2E','#6B1F1F'],borderWidth:0}]},
-        options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}},tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490'}}}
-      });
-    }
-  }
-  if(id==='rec-detail') {
-    dc('cRec');
-    const d=filtRH(LIVE_RH.rec||[]);
-    const meses=[...new Set(d.map(r=>r.mes))].sort();
-    const vagas=meses.map(m=>d.filter(r=>r.mes===m).reduce((a,r)=>a+r.qtd,0));
-    const entre=meses.map(m=>d.filter(r=>r.mes===m).reduce((a,r)=>a+r.entrevistas,0));
-    const aprov=meses.map(m=>d.filter(r=>r.mes===m).reduce((a,r)=>a+r.aprovados,0));
-    CHS_RH['cRec']=new Chart(document.getElementById('cRec'),{
+
+  if(id==='rh-ass'){
+    dcRH('cRhFaltas');
+    const all=LIVE_RH.assiduidade||[], sel=filtRH(all);
+    const meses=[...new Set(all.map(r=>r.mes))];
+    const fAll=meses.map(m=>all.filter(r=>r.mes===m).reduce((a,r)=>a+r.faltas,0));
+    const fSel=meses.map(m=>{ const s=sel.filter(r=>r.mes===m); return s.length?s.reduce((a,r)=>a+r.faltas,0):null; });
+    CHS_RH['cRhFaltas']=new Chart(document.getElementById('cRhFaltas'),{
       type:'bar',
       data:{labels:meses,datasets:[
-        {label:'Vagas',data:vagas,backgroundColor:'#8B2E2E',borderRadius:3},
-        {label:'Entrevistas',data:entre,backgroundColor:'#C9943A',borderRadius:3},
-        {label:'Aprovados',data:aprov,backgroundColor:'#4a8c4a',borderRadius:3},
+        {label:'Histórico',data:fAll,backgroundColor:'rgba(139,46,46,.2)',borderRadius:2},
+        {label:'Selecionado',data:fSel,backgroundColor:'#8B2E2E',borderRadius:2},
       ]},
-      options:{...cdoRH,plugins:{...cdoRH.plugins,legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
     });
   }
-  if(id==='desemp-detail') {
-    dc('cDesemp');
-    const d=LIVE_RH.desempenho||[];
-    const meses=[...new Set(d.map(r=>r.mes))].sort();
-    const medias=meses.map(m=>{const sub=d.filter(r=>r.mes===m);return sub.length?sub.reduce((a,r)=>a+r.nota,0)/sub.length:null;});
-    CHS_RH['cDesemp']=new Chart(document.getElementById('cDesemp'),{
-      type:'line',
-      data:{labels:meses,datasets:[{data:medias.map(v=>v?parseFloat((v*100).toFixed(1)):null),borderColor:'#C9943A',backgroundColor:'rgba(201,148,58,.08)',tension:.3,fill:true,pointRadius:5,pointBackgroundColor:'#C9943A',spanGaps:true}]},
-      options:{...cdoRH,scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:10}}},y:{min:60,max:100,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>v+'%'}}}}
-    });
-  }
-  if(id==='endo-detail') {
-    dc('cEndo');
-    const d=filtRH(LIVE_RH.endomkt||[]);
-    const meses=[...new Set(d.map(r=>r.mes))].sort();
-    const custos=meses.map(m=>d.filter(r=>r.mes===m).reduce((a,r)=>a+r.custo,0));
-    const acoes=meses.map(m=>d.filter(r=>r.mes===m).length);
-    CHS_RH['cEndo']=new Chart(document.getElementById('cEndo'),{
+
+  if(id==='rh-rec'){
+    dcRH('cRhRec');
+    const all=LIVE_RH.rec||[], sel=filtRH(all);
+    const meses=[...new Set(all.map(r=>r.mes))];
+    const vAll=meses.map(m=>all.filter(r=>r.mes===m).reduce((a,r)=>a+r.qtd,0));
+    const vSel=meses.map(m=>{ const s=sel.filter(r=>r.mes===m); return s.length?s.reduce((a,r)=>a+r.qtd,0):null; });
+    const apAll=meses.map(m=>all.filter(r=>r.mes===m).reduce((a,r)=>a+r.aprovados,0));
+    CHS_RH['cRhRec']=new Chart(document.getElementById('cRhRec'),{
       type:'bar',
       data:{labels:meses,datasets:[
-        {label:'Custo (R$)',data:custos,backgroundColor:'#C9943A',borderRadius:3,yAxisID:'y'},
-        {label:'Ações',data:acoes,type:'line',borderColor:'#8B2E2E',backgroundColor:'transparent',tension:.3,pointRadius:4,pointBackgroundColor:'#8B2E2E',yAxisID:'y1'},
+        {label:'Vagas (histórico)',data:vAll,backgroundColor:'rgba(139,46,46,.2)',borderRadius:3},
+        {label:'Vagas (selecionado)',data:vSel,backgroundColor:'#8B2E2E',borderRadius:3},
+        {label:'Aprovados',data:apAll,type:'line',borderColor:'#4a8c4a',backgroundColor:'transparent',pointRadius:3,pointBackgroundColor:'#4a8c4a',tension:.3},
       ]},
-      options:{...cdoRH,plugins:{...cdoRH.plugins,legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
+    });
+  }
+
+  if(id==='rh-desemp'){
+    dcRH('cRhDesemp'); dcRH('cRhDesempDist');
+    const all=LIVE_RH.desempenho||[], sel=filtRH(all);
+    const meses=[...new Set(all.map(r=>r.mes))];
+    const mAll=meses.map(m=>{ const s=all.filter(r=>r.mes===m); return s.length?parseFloat((s.reduce((a,r)=>a+r.nota,0)/s.length*100).toFixed(1)):null; });
+    const mSel=meses.map(m=>{ const s=sel.filter(r=>r.mes===m); return s.length?parseFloat((s.reduce((a,r)=>a+r.nota,0)/s.length*100).toFixed(1)):null; });
+    CHS_RH['cRhDesemp']=new Chart(document.getElementById('cRhDesemp'),{
+      type:'line',
+      data:{labels:meses,datasets:[
+        {label:'Histórico',data:mAll,borderColor:'rgba(201,148,58,.3)',backgroundColor:'transparent',tension:.3,pointRadius:2,spanGaps:true},
+        {label:'Selecionado',data:mSel,borderColor:'#C9943A',backgroundColor:'rgba(201,148,58,.1)',tension:.3,pointRadius:5,pointBackgroundColor:'#C9943A',fill:true,spanGaps:false},
+      ]},
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{min:60,max:100,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>v+'%'}}}}
+    });
+    // Distribuição
+    const src=sel.length?sel:all;
+    const alto=src.filter(r=>r.nota>=0.9).length, medio=src.filter(r=>r.nota>=0.75&&r.nota<0.9).length, baixo=src.filter(r=>r.nota<0.75).length;
+    CHS_RH['cRhDesempDist']=new Chart(document.getElementById('cRhDesempDist'),{
+      type:'doughnut',
+      data:{labels:['Alta (≥90%)', 'Média (75-89%)', 'Baixa (<75%)'],datasets:[{data:[alto,medio,baixo],backgroundColor:['#4a8c4a','#C9943A','#8B2E2E'],borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}},tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490'}}}
+    });
+  }
+
+  if(id==='rh-endo'){
+    dcRH('cRhEndo');
+    const all=LIVE_RH.endomkt||[], sel=filtRH(all);
+    const meses=[...new Set(all.map(r=>r.mes))];
+    const cAll=meses.map(m=>all.filter(r=>r.mes===m).reduce((a,r)=>a+r.custo,0));
+    const cSel=meses.map(m=>{ const s=sel.filter(r=>r.mes===m); return s.length?s.reduce((a,r)=>a+r.custo,0):null; });
+    const nAll=meses.map(m=>all.filter(r=>r.mes===m).length);
+    CHS_RH['cRhEndo']=new Chart(document.getElementById('cRhEndo'),{
+      type:'bar',
+      data:{labels:meses,datasets:[
+        {label:'Custo histórico',data:cAll,backgroundColor:'rgba(201,148,58,.2)',borderRadius:3,yAxisID:'y'},
+        {label:'Custo selecionado',data:cSel,backgroundColor:'#C9943A',borderRadius:3,yAxisID:'y'},
+        {label:'Nº ações',data:nAll,type:'line',borderColor:'#8B2E2E',backgroundColor:'transparent',pointRadius:3,yAxisID:'y1'},
+      ]},
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{
         x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},
         y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1000).toFixed(0)+'k'},position:'left'},
         y1:{grid:{display:false},ticks:{color:'#5e5c58',stepSize:1},position:'right'},
       }}
     });
   }
-  if(id==='pdi-detail') {
-    dc('cPdi');
-    const d=LIVE_RH.pdi||[];
-    const meses=[...new Set(d.map(r=>r.mes))].sort();
-    const colab=meses.map(m=>d.filter(r=>r.mes===m).length);
-    const entregues=meses.map(m=>d.filter(r=>r.mes===m&&r.entregue).length);
-    CHS_RH['cPdi']=new Chart(document.getElementById('cPdi'),{
+
+  if(id==='rh-pdi'){
+    dcRH('cRhPdi');
+    const all=LIVE_RH.pdi||[], sel=filtRH(all);
+    const meses=[...new Set(all.map(r=>r.mes))];
+    const cAll=meses.map(m=>all.filter(r=>r.mes===m).length);
+    const eAll=meses.map(m=>all.filter(r=>r.mes===m&&r.entregue).length);
+    const cSel=meses.map(m=>{ const s=sel.filter(r=>r.mes===m); return s.length?s.length:null; });
+    CHS_RH['cRhPdi']=new Chart(document.getElementById('cRhPdi'),{
       type:'bar',
       data:{labels:meses,datasets:[
-        {label:'Colaboradores',data:colab,backgroundColor:'#8B2E2E',borderRadius:3},
-        {label:'Entregues',data:entregues,backgroundColor:'#4a8c4a',borderRadius:3},
+        {label:'Tarefas (histórico)',data:cAll,backgroundColor:'rgba(139,46,46,.2)',borderRadius:3},
+        {label:'Tarefas (selecionado)',data:cSel,backgroundColor:'#8B2E2E',borderRadius:3},
+        {label:'Entregues',data:eAll,type:'line',borderColor:'#4a8c4a',backgroundColor:'transparent',pointRadius:3,tension:.3},
       ]},
-      options:{...cdoRH,plugins:{...cdoRH.plugins,legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
     });
   }
-  if(id==='reun-detail') {
-    dc('cReun');
-    const d=filtRH(LIVE_RH.reunioes||[]);
-    const tipos=[...new Set(d.map(r=>r.tipo))];
-    const meses=[...new Set(d.map(r=>r.mes))].sort();
+
+  if(id==='rh-reun'){
+    dcRH('cRhReun');
+    const all=LIVE_RH.reunioes||[], sel=filtRH(all);
+    const tipos=[...new Set(all.map(r=>r.tipo))];
+    const meses=[...new Set(all.map(r=>r.mes))];
     const cores=['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a','#7a5a9a','#9a7a2a'];
-    CHS_RH['cReun']=new Chart(document.getElementById('cReun'),{
+    const datasets=tipos.map((t,i)=>({
+      label:t.replace('Reuniões 1 a 1 RH + ','1a1 '),
+      data:meses.map(m=>{ const r=all.find(x=>x.mes===m&&x.tipo===t); return r?r.feitas:0; }),
+      backgroundColor:cores[i%cores.length], borderRadius:2,
+    }));
+    // Highlight selecionado
+    const selMeses=new Set(sel.map(r=>r.mes));
+    CHS_RH['cRhReun']=new Chart(document.getElementById('cRhReun'),{
       type:'bar',
-      data:{labels:meses,datasets:tipos.map((t,i)=>({
-        label:t.replace('Reuniões 1 a 1 RH + ','1a1 '),
-        data:meses.map(m=>{const r=d.find(x=>x.mes===m&&x.tipo===t);return r?r.feitas:0;}),
-        backgroundColor:cores[i%cores.length],borderRadius:2,
-      }))},
-      options:{...cdoRH,plugins:{...cdoRH.plugins,legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:8,font:{size:9}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
+      data:{labels:meses,datasets},
+      options:{...cdoRH,plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:8,font:{size:9}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:meses.map(m=>selMeses.has(m)||MES_RH==='todos'?'#9a9490':'#3a3a3a'),font:{size:9}}},y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
     });
   }
-  if(id==='term-detail') {
-    dc('cTermDonut');
-    const ultimo=LIVE_RH.termometro?.[LIVE_RH.termometro.length-1];
-    if(ultimo){
+
+  if(id==='rh-term'){
+    dcRH('cRhTermDonut'); dcRH('cRhTermLine');
+    const all=LIVE_RH.termometro||[], sel=filtRH(all);
+    const ult=(sel.length?sel:all)[((sel.length?sel:all).length)-1];
+    if(ult){
       const setores=[
-        {n:'Op. RMZ',v:ultimo.rmz},{n:'Op. Z.Office',v:ultimo.zo},
-        {n:'Adm. Op.',v:ultimo.admOp},{n:'Adm. Geral',v:ultimo.admGeral},
-        {n:'RH',v:ultimo.rh},{n:'Comercial',v:ultimo.comercial},{n:'Academy',v:ultimo.academy},
+        {n:'Op. RMZ',v:ult.rmz,c:'#8B2E2E'},{n:'Op. Z.Office',v:ult.zo,c:'#C9943A'},
+        {n:'Adm. Op.',v:ult.admOp,c:'#5a7a9a'},{n:'Adm. Geral',v:ult.admGeral,c:'#4a8c4a'},
+        {n:'RH',v:ult.rh,c:'#7a5a9a'},{n:'Comercial',v:ult.comercial,c:'#9a7a2a'},{n:'Academy',v:ult.academy,c:'#2a7a9a'},
       ].filter(s=>s.v>0);
-      CHS_RH['cTermDonut']=new Chart(document.getElementById('cTermDonut'),{
+      CHS_RH['cRhTermDonut']=new Chart(document.getElementById('cRhTermDonut'),{
         type:'doughnut',
-        data:{labels:setores.map(s=>s.n),datasets:[{data:setores.map(s=>s.v),backgroundColor:['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a','#7a5a9a','#9a7a2a','#2a7a9a'],borderWidth:0,hoverOffset:4}]},
-        options:{responsive:true,maintainAspectRatio:false,cutout:'50%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}},tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490',callbacks:{label:ctx=>' '+fR(ctx.raw)+(ctx.dataset.data.reduce((a,b)=>a+b,0)>0?' ('+Math.round(ctx.raw/ctx.dataset.data.reduce((a,b)=>a+b,0)*100)+'%)':'')}}}}
+        data:{labels:setores.map(s=>s.n),datasets:[{data:setores.map(s=>s.v),backgroundColor:setores.map(s=>s.c),borderWidth:0,hoverOffset:4}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'50%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}},tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490',callbacks:{label:ctx=>' '+fRRH(ctx.raw)+' ('+Math.round(ctx.raw/setores.reduce((a,s)=>a+s.v,0)*100)+'%)'}}}}
       });
     }
+    // Linha evolução total
+    const meses=all.map(r=>r.mes), totais=all.map(r=>r.total);
+    const selSet=new Set((sel.length?sel:all).map(r=>r.mes));
+    CHS_RH['cRhTermLine']=new Chart(document.getElementById('cRhTermLine'),{
+      type:'line',
+      data:{labels:meses,datasets:[
+        {label:'Total folha',data:totais,borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.08)',tension:.3,fill:true,pointRadius:4,pointBackgroundColor:meses.map(m=>selSet.has(m)?'#8B2E2E':'rgba(139,46,46,.3)'),pointRadius:meses.map(m=>selSet.has(m)?5:3)},
+      ]},
+      options:{...cdoRH,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1000).toFixed(0)+'k'}}}}
+    });
   }
 }
 
-// INIT
-
+function switchTab(tab) {
+  TAB_ATIVO = tab;
+  document.querySelectorAll('.mod-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('pane-comercial').style.display = tab==='comercial'?'':'none';
+  document.getElementById('pane-rh').style.display = tab==='rh'?'':'none';
+  const filtroMes = document.getElementById('filtro-mes-wrap');
+  if(filtroMes) filtroMes.style.display = tab==='comercial' ? 'flex' : 'none';
+  if(tab==='rh' && !LIVE_RH_RH_loaded) loadRH();
+}
 
 </script>
 
