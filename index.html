@@ -155,7 +155,7 @@ td.c{text-align:center}
       <line x1="8" y1="16" x2="15" y2="2" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
     </svg>
   </div>
-  <div><div class="ztitle">ZABALETA</div><div class="zsub">Construtora e Incorporadora</div></div>
+  <div><div class="ztitle">RESULTADOS ZABALETA</div><div class="zsub">Construtora e Incorporadora</div></div>
   <!-- TABS DE MÓDULO -->
   <div style="display:flex;gap:0;margin-left:20px">
     <button class="mod-tab active" id="tab-comercial" onclick="switchTab('comercial')">Comercial</button>
@@ -860,6 +860,13 @@ td.c{text-align:center}
 <div style="height:40px"></div>
 </div><!-- /wrap -->
 <div id="pane-rh" class="wrap" style="display:none">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:20px;flex-wrap:wrap">
+  <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">Período</span>
+  <div id="mes-filter-rh" style="display:flex;gap:4px;flex-wrap:wrap">
+    <button class="mf active" onclick="setMesRH(&quot;todos&quot;,this)">Todos</button>
+  </div>
+  <button onclick="loadRH()" style="margin-left:auto;font-size:11px;padding:3px 10px;background:var(--bg3);border:1px solid var(--b);border-radius:4px;color:var(--t3);cursor:pointer">↺ Atualizar RH</button>
+</div>
 
 <!-- FILTRO DE MÊS -->
 <div class="mes-filter" id="mes-filter">
@@ -2743,7 +2750,7 @@ function switchTab(tab) {
 }
 
 // Referência para dados RH
-let LIVE_RH = {loaded:false};
+// LIVE_RH gerenciado pelo módulo RH;
 
 // Construir filtro de mês dinamicamente com dados reais
 function buildMesesFilter() {
@@ -3308,7 +3315,7 @@ const ABAS = {
   faltasTower:'Dados Obra ',
 };
 
-let LIVE = {};
+let LIVE_RH = {};
 let MES_RH = 'todos';
 let CHS_RH = {};
 const openDrawersRH = new Set();
@@ -3348,19 +3355,21 @@ function rowsToObj(rows) {
 // ══ LOAD ══
 async function loadRH() {
   LIVE_RH.loaded = true;
-  document.getElementById('loading-overlay').style.display='flex';
+  // Mostrar loading só se aba RH estiver ativa
+  const overlay = document.getElementById('loading-overlay');
+  if(overlay && TAB_ATIVO === 'rh') overlay.style.display='flex';
   try {
     const tabs = await Promise.all(Object.values(ABAS).map(t => fetchTab(t).catch(()=>[])));
     const [npsR,turnR,assR,desempR,endoR,pdiR,recR,reunR,termR,towR] = tabs;
 
     // NPS
-    LIVE.nps = rowsToObj(npsR).map(r=>({ mes: normData(r['Mês']), nota: parseFloat(r['Nota'])||0 })).filter(r=>r.nota>0);
+    LIVE_RH.nps = rowsToObj(npsR).map(r=>({ mes: normData(r['Mês']), nota: parseFloat(r['Nota'])||0 })).filter(r=>r.nota>0);
 
     // Turnover
-    LIVE.turnover = rowsToObj(turnR).map(r=>({ mes: normData(r['Mês']), taxa: parseFloat(r['Turnover'])*100||0 }));
+    LIVE_RH.turnover = rowsToObj(turnR).map(r=>({ mes: normData(r['Mês']), taxa: parseFloat(r['Turnover'])*100||0 }));
 
     // Assiduidade
-    LIVE.assiduidade = rowsToObj(assR).map(r=>({
+    LIVE_RH.assiduidade = rowsToObj(assR).map(r=>({
       mes: normData(r['Mês']), colaborador: r['Colaborador']||'',
       faltas: parseFloat(r['Número de Faltas'])||0,
       atm: parseFloat(r['Número de ATM'])||0,
@@ -3368,19 +3377,19 @@ async function loadRH() {
     })).filter(r=>r.colaborador);
 
     // Desempenho
-    LIVE.desempenho = rowsToObj(desempR).map(r=>({
+    LIVE_RH.desempenho = rowsToObj(desempR).map(r=>({
       mes: normData(r['Mês']), avaliador: r['Avaliador']||'', colaborador: r['Colaborador']||'',
       setor: r['Setor']||'', nota: parseFloat(r['Avaliação de Desempenho'])||0,
     })).filter(r=>r.colaborador&&r.nota>0);
 
     // Endomarketing
-    LIVE.endomkt = rowsToObj(endoR).map(r=>({
+    LIVE_RH.endomkt = rowsToObj(endoR).map(r=>({
       mes: normData(r['MÊS']), acao: r['Ação']||'', custo: parsePtBRRH(r['Custo da Ação']),
       orcamento: parsePtBRRH(r['Orçamento Previsto']),
     })).filter(r=>r.acao);
 
     // PDI
-    LIVE.pdi = rowsToObj(pdiR).map(r=>({
+    LIVE_RH.pdi = rowsToObj(pdiR).map(r=>({
       mes: normData(r['Mês']), colaborador: r['Colaborador']||'',
       tarefa: r['Tarefa']||'', curso: r['Curso/Livro']||'',
       custo: parsePtBRRH(r['Custo']),
@@ -3389,7 +3398,7 @@ async function loadRH() {
     })).filter(r=>r.colaborador);
 
     // Recrutamento
-    LIVE.rec = rowsToObj(recR).map(r=>({
+    LIVE_RH.rec = rowsToObj(recR).map(r=>({
       mes: normData(r['Mês']), emp: r['Empreendimento']||'',
       cargo: r['Vagas Abertas']||'', qtd: parseFloat(r['Quantidade'])||0,
       tempo: parseFloat(r['Tempo entre demanda por contratação e contratação efetivada '])||0,
@@ -3398,13 +3407,13 @@ async function loadRH() {
     })).filter(r=>r.cargo&&r.cargo!=='nan');
 
     // Reuniões
-    LIVE.reunioes = rowsToObj(reunR).map(r=>({
+    LIVE_RH.reunioes = rowsToObj(reunR).map(r=>({
       mes: normData(r['Mês']), tipo: r['Tipo de Reunião']||'',
       feitas: parseFloat(r['Reuniões Feitas'])||0,
     })).filter(r=>r.tipo);
 
     // Termômetro
-    LIVE.termometro = rowsToObj(termR).map(r=>({
+    LIVE_RH.termometro = rowsToObj(termR).map(r=>({
       mes: normData(r['Mês']),
       total: parsePtBRRH(r['Total']),
       rmz: parsePtBRRH(r['Op. RMZ']),
@@ -3417,7 +3426,7 @@ async function loadRH() {
     })).filter(r=>r.total>1000);
 
     // Faltas Tower
-    LIVE.faltasTower = rowsToObj(towR).map(r=>({
+    LIVE_RH.faltasTower = rowsToObj(towR).map(r=>({
       mes: normData(r['Mês']),
       faltas: parseFloat(r['Número de Faltas Z.Tower'])||0,
       meio: parseFloat(r['Número de colaboradores com 0,5 faltas Z.Tower'])||0,
@@ -3427,15 +3436,18 @@ async function loadRH() {
 
     // Montar filtro de meses
     buildMesFilterRH();
-    renderAllRH();
+    if(TAB_ATIVO === 'rh') renderAllRH();
 
     const now = new Date();
-    document.getElementById('last-update').textContent = `Atualizado ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-    console.log('✅ RH carregado:', Object.fromEntries(Object.entries(LIVE).map(([k,v])=>[k,v.length])));
+    const luRH = document.getElementById('last-update-badge');
+    if(luRH) luRH.textContent = `RH atualizado ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    console.log('✅ RH carregado:', Object.fromEntries(Object.entries(LIVE_RH).map(([k,v])=>[k,v.length])));
 
   } catch(err) {
     console.error('Erro:', err);
-    document.getElementById('loading-overlay').innerHTML = `<div style="text-align:center"><div style="font-size:24px;margin-bottom:10px">⚠️</div><div style="font-size:13px;color:#c07070;margin-bottom:10px">${err.message}</div><button onclick="loadRH()" style="padding:6px 14px;background:var(--red);color:#fff;border:none;border-radius:5px;cursor:pointer">Tentar novamente</button></div>`;
+    console.error('Erro RH:', err);
+    const errOverlay = document.getElementById('loading-overlay');
+    if(errOverlay) errOverlay.innerHTML = `<div style="text-align:center"><div style="font-size:24px;margin-bottom:10px">⚠️</div><div style="font-size:13px;color:#c07070;margin-bottom:10px">${err.message}</div><button onclick="loadRH()" style="padding:6px 14px;background:var(--red);color:#fff;border:none;border-radius:5px;cursor:pointer">Tentar novamente</button></div>`;
     return;
   }
   document.getElementById('loading-overlay').style.display='none';
@@ -3444,13 +3456,14 @@ async function loadRH() {
 // ══ FILTRO ══
 function buildMesFilterRH() {
   const meses = new Set();
-  Object.values(LIVE).forEach(arr => arr.forEach(r => { if(r.mes) meses.add(r.mes); }));
+  Object.values(LIVE_RH).forEach(arr => arr.forEach(r => { if(r.mes) meses.add(r.mes); }));
   const sorted = [...meses].sort((a,b)=>{
     const md = s=>{ try{return new Date(s)}catch(e){return new Date(0)} };
     return md(a)-md(b);
   });
-  const nav = document.getElementById('mes-filter');
-  nav.innerHTML = '<span class="mes-label">Período</span><button class="mf active" onclick="setMesRH(\'todos\',this)">Todos</button>';
+  const nav = document.getElementById('mes-filter-rh');
+  if(!nav) return;
+  nav.innerHTML = `<span class="mes-label">Período</span><button class="mf active" onclick="setMesRH('todos',this)">Todos</button>`;
   sorted.forEach(m=>{
     const btn=document.createElement('button');
     btn.className='mf'; btn.textContent=m;
@@ -3508,7 +3521,7 @@ const setElRH = (id,val,sub) => {
 
 // NPS
 function renderNps() {
-  const d = filtRH(LIVE.nps||[]);
+  const d = filtRH(LIVE_RH.nps||[]);
   if(!d.length){ setElRH('nps-score','—','sem dados'); return; }
   const ultimo = d[d.length-1];
   const melhor = d.reduce((a,b)=>b.nota>a.nota?b:a,d[0]);
@@ -3521,7 +3534,7 @@ function renderNps() {
 
 // Turnover
 function renderTurnover() {
-  const d = filtRH(LIVE.turnover||[]);
+  const d = filtRH(LIVE_RH.turnover||[]);
   if(!d.length){ setElRH('turn-atual','—','sem dados'); return; }
   const ultimo = d[d.length-1];
   const media = d.reduce((a,b)=>a+b.taxa,0)/d.length;
@@ -3536,8 +3549,8 @@ function renderTurnover() {
 
 // Assiduidade
 function renderAssiduidade() {
-  const d = filtRH(LIVE.assiduidade||[]);
-  const tower = filtRH(LIVE.faltasTower||[]);
+  const d = filtRH(LIVE_RH.assiduidade||[]);
+  const tower = filtRH(LIVE_RH.faltasTower||[]);
   const totalFaltas = d.reduce((a,r)=>a+r.faltas,0);
   const totalAtm = d.reduce((a,r)=>a+r.atm,0);
   const totalInss = d.reduce((a,r)=>a+r.inss,0);
@@ -3553,7 +3566,7 @@ function renderAssiduidade() {
 
 // Recrutamento
 function renderRecrutamento() {
-  const d = filtRH(LIVE.rec||[]);
+  const d = filtRH(LIVE_RH.rec||[]);
   const vagas = d.reduce((a,r)=>a+r.qtd,0);
   const entre = d.reduce((a,r)=>a+r.entrevistas,0);
   const aprov = d.reduce((a,r)=>a+r.aprovados,0);
@@ -3576,7 +3589,7 @@ function renderRecrutamento() {
 
 // Desempenho
 function renderDesempenho() {
-  const d = filtRH(LIVE.desempenho||[]);
+  const d = filtRH(LIVE_RH.desempenho||[]);
   if(!d.length){ setElRH('desemp-media','—','sem dados'); return; }
   const media = d.reduce((a,r)=>a+r.nota,0)/d.length;
   // Última rodada = último mês com dados
@@ -3602,7 +3615,7 @@ function renderDesempenho() {
 
 // Endomarketing
 function renderEndo() {
-  const d = filtRH(LIVE.endomkt||[]);
+  const d = filtRH(LIVE_RH.endomkt||[]);
   const total = d.reduce((a,r)=>a+r.custo,0);
   const media = d.length>0?total/d.length:0;
   const topAcao = Object.entries(d.reduce((a,r)=>{a[r.acao]=(a[r.acao]||0)+r.custo;return a},{})).sort((a,b)=>b[1]-a[1])[0];
@@ -3624,7 +3637,7 @@ function renderEndo() {
 
 // PDI
 function renderPdi() {
-  const d = filtRH(LIVE.pdi||[]);
+  const d = filtRH(LIVE_RH.pdi||[]);
   const entregues = d.filter(r=>r.entregue).length;
   const atrasados = d.filter(r=>r.atrasado).length;
   const custo = d.reduce((a,r)=>a+r.custo,0);
@@ -3637,7 +3650,7 @@ function renderPdi() {
 
 // Reuniões
 function renderReunioes() {
-  const d = filtRH(LIVE.reunioes||[]);
+  const d = filtRH(LIVE_RH.reunioes||[]);
   const total = d.reduce((a,r)=>a+r.feitas,0);
   const tipo = t => d.filter(r=>r.tipo&&r.tipo.toLowerCase().includes(t)).reduce((a,r)=>a+r.feitas,0);
   const um1 = tipo('1 a 1 rh + líder');
@@ -3652,7 +3665,7 @@ function renderReunioes() {
 
 // Termômetro
 function renderTermometro() {
-  const d = (LIVE.termometro||[]);
+  const d = (LIVE_RH.termometro||[]);
   const ultimo = d[d.length-1];
   if(!ultimo){ setElRH('term-total','—','sem dados'); return; }
   setElRH('term-total', fR(ultimo.total), ultimo.mes);
@@ -3683,7 +3696,7 @@ function renderTermometro() {
 function buildChartRH(id) {
   if(id==='nps-detail') {
     dc('cNpsInt');
-    const d=filtRH(LIVE.nps||[]);
+    const d=filtRH(LIVE_RH.nps||[]);
     CHS_RH['cNpsInt']=new Chart(document.getElementById('cNpsInt'),{
       type:'line',
       data:{labels:d.map(r=>r.mes),datasets:[{data:d.map(r=>r.nota),borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.08)',tension:.3,fill:true,pointRadius:5,pointBackgroundColor:'#8B2E2E'}]},
@@ -3692,7 +3705,7 @@ function buildChartRH(id) {
   }
   if(id==='turn-detail') {
     dc('cTurnover');
-    const d=filtRH(LIVE.turnover||[]);
+    const d=filtRH(LIVE_RH.turnover||[]);
     CHS_RH['cTurnover']=new Chart(document.getElementById('cTurnover'),{
       type:'bar',
       data:{labels:d.map(r=>r.mes),datasets:[{data:d.map(r=>r.taxa),backgroundColor:d.map(r=>r.taxa>10?'#c07070':r.taxa>5?'#d4a855':'#8B2E2E'),borderRadius:3}]},
@@ -3701,7 +3714,7 @@ function buildChartRH(id) {
   }
   if(id==='ass-detail') {
     dc('cFaltasTower'); dc('cFaltasDistrib');
-    const tower=filtRH(LIVE.faltasTower||[]).slice(-12);
+    const tower=filtRH(LIVE_RH.faltasTower||[]).slice(-12);
     CHS_RH['cFaltasTower']=new Chart(document.getElementById('cFaltasTower'),{
       type:'line',
       data:{labels:tower.map(r=>r.mes),datasets:[{label:'Faltas',data:tower.map(r=>r.faltas),borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.08)',tension:.3,fill:true,pointRadius:3}]},
@@ -3718,7 +3731,7 @@ function buildChartRH(id) {
   }
   if(id==='rec-detail') {
     dc('cRec');
-    const d=filtRH(LIVE.rec||[]);
+    const d=filtRH(LIVE_RH.rec||[]);
     const meses=[...new Set(d.map(r=>r.mes))].sort();
     const vagas=meses.map(m=>d.filter(r=>r.mes===m).reduce((a,r)=>a+r.qtd,0));
     const entre=meses.map(m=>d.filter(r=>r.mes===m).reduce((a,r)=>a+r.entrevistas,0));
@@ -3735,7 +3748,7 @@ function buildChartRH(id) {
   }
   if(id==='desemp-detail') {
     dc('cDesemp');
-    const d=LIVE.desempenho||[];
+    const d=LIVE_RH.desempenho||[];
     const meses=[...new Set(d.map(r=>r.mes))].sort();
     const medias=meses.map(m=>{const sub=d.filter(r=>r.mes===m);return sub.length?sub.reduce((a,r)=>a+r.nota,0)/sub.length:null;});
     CHS_RH['cDesemp']=new Chart(document.getElementById('cDesemp'),{
@@ -3746,7 +3759,7 @@ function buildChartRH(id) {
   }
   if(id==='endo-detail') {
     dc('cEndo');
-    const d=filtRH(LIVE.endomkt||[]);
+    const d=filtRH(LIVE_RH.endomkt||[]);
     const meses=[...new Set(d.map(r=>r.mes))].sort();
     const custos=meses.map(m=>d.filter(r=>r.mes===m).reduce((a,r)=>a+r.custo,0));
     const acoes=meses.map(m=>d.filter(r=>r.mes===m).length);
@@ -3765,7 +3778,7 @@ function buildChartRH(id) {
   }
   if(id==='pdi-detail') {
     dc('cPdi');
-    const d=LIVE.pdi||[];
+    const d=LIVE_RH.pdi||[];
     const meses=[...new Set(d.map(r=>r.mes))].sort();
     const colab=meses.map(m=>d.filter(r=>r.mes===m).length);
     const entregues=meses.map(m=>d.filter(r=>r.mes===m&&r.entregue).length);
@@ -3780,7 +3793,7 @@ function buildChartRH(id) {
   }
   if(id==='reun-detail') {
     dc('cReun');
-    const d=filtRH(LIVE.reunioes||[]);
+    const d=filtRH(LIVE_RH.reunioes||[]);
     const tipos=[...new Set(d.map(r=>r.tipo))];
     const meses=[...new Set(d.map(r=>r.mes))].sort();
     const cores=['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a','#7a5a9a','#9a7a2a'];
@@ -3796,7 +3809,7 @@ function buildChartRH(id) {
   }
   if(id==='term-detail') {
     dc('cTermDonut');
-    const ultimo=LIVE.termometro?.[LIVE.termometro.length-1];
+    const ultimo=LIVE_RH.termometro?.[LIVE_RH.termometro.length-1];
     if(ultimo){
       const setores=[
         {n:'Op. RMZ',v:ultimo.rmz},{n:'Op. Z.Office',v:ultimo.zo},
