@@ -4614,20 +4614,14 @@ function renderOperacional() {
 
   // Curva S
   const normP = v => v > 1 ? v : v * 100;
+  // Linha azul: avanço acumulado esperado (cronograma)
   const espAcum = comCron.map(r=>parseFloat(normP(r.avanco_acum_esp).toFixed(2)));
-  const realAcum = comCron.map(r=>{
-    if(r.pct_obra>0) return parseFloat(normP(r.pct_obra).toFixed(2));
-    if(r.avanco_mes>0) return parseFloat(normP(r.avanco_mes).toFixed(2));
-    return null;
-  });
-
-  // Calcular acumulado real (soma dos avanços mensais)
-  let acum = 0;
+  // Pontos vermelhos: soma acumulada do avanco_mes medido
+  let acumReal = 0;
   const realAcumCalc = comCron.map(r=>{
-    if(r.avanco_mes>0||r.pct_obra>0){
-      const v = normP(r.avanco_mes>0?r.avanco_mes:r.pct_obra);
-      acum += v;
-      return parseFloat(acum.toFixed(2));
+    if(r.avanco_mes > 0){
+      acumReal += normP(r.avanco_mes);
+      return parseFloat(acumReal.toFixed(2));
     }
     return null;
   });
