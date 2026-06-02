@@ -2773,6 +2773,7 @@ let LIVE_RH_RH_loaded = false;
 
 // Construir filtro de mês dinamicamente com dados reais
 // ── FILTRO ANO + MÊS ──
+let MES_ATIVO = 'todos';
 let ANO_ATIVO = 'todos';
 
 const MESES_ORDEM = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
@@ -3095,6 +3096,123 @@ function setKPI(id, val, sub) {
   if(kv) kv.textContent = val;
   if(ks) ks.textContent = sub;
 }
+
+// ══ DADOS ESTÁTICOS RESTAURADOS ══
+const GERENTES_VISITAS = [
+  {
+    nome:'Ricardo', foto:'R', cor:'#8B2E2E',
+    total:{vis:171, imobs:55, cor:449, eng:9.2},
+    por_mes:{
+      'Janeiro':{vis:57,imobs:27,cor:57,eng:9.0},'Fevereiro':{vis:8,imobs:6,cor:8,eng:9.0},
+      'Março':{vis:61,imobs:22,cor:170,eng:9.5},'Abril':{vis:45,imobs:35,cor:214,eng:9.1},
+      'Maio':{vis:0,imobs:0,cor:0,eng:0},'Junho':{vis:0,imobs:0,cor:0,eng:0},
+    },
+    top_imobs:{
+      'todos':[{i:'Emana',v:16},{i:'5 Imob',v:14},{i:'Luan Teixeira',v:8},{i:'Villar',v:10}],
+      'Janeiro':[{i:'Villar',v:6},{i:'Krolow',v:4},{i:'5 Imob',v:4}],
+      'Fevereiro':[{i:'Outros',v:3}],
+      'Março':[{i:'5 Imob',v:7},{i:'Emana',v:7},{i:'Une',v:7}],
+      'Abril':[{i:'Emana',v:6},{i:'5 Imob',v:3},{i:'Doro e Lauz',v:3}],
+      'Maio':[],'Junho':[],
+    },
+  },
+  {
+    nome:'Jonata', foto:'J', cor:'#C9943A',
+    total:{vis:69, imobs:38, cor:215, eng:9.6},
+    por_mes:{
+      'Janeiro':{vis:0,imobs:0,cor:0,eng:0},'Fevereiro':{vis:0,imobs:0,cor:0,eng:0},
+      'Março':{vis:40,imobs:23,cor:162,eng:9.7},'Abril':{vis:29,imobs:22,cor:53,eng:9.5},
+      'Maio':{vis:0,imobs:0,cor:0,eng:0},'Junho':{vis:0,imobs:0,cor:0,eng:0},
+    },
+    top_imobs:{
+      'todos':[{i:'Rejane Sigal',v:7},{i:'Une',v:5},{i:'5 Imob',v:4},{i:'Krolow',v:4}],
+      'Janeiro':[],'Fevereiro':[],
+      'Março':[{i:'Rejane Sigal',v:5},{i:'Une',v:4}],
+      'Abril':[{i:'Krolow',v:3},{i:'Rejane Sigal',v:2}],
+      'Maio':[],'Junho':[],
+    },
+  },
+  {
+    nome:'Lara', foto:'L', cor:'#5a7a9a',
+    total:{vis:82, imobs:42, cor:306, eng:9.4},
+    por_mes:{
+      'Janeiro':{vis:0,imobs:0,cor:0,eng:0},'Fevereiro':{vis:0,imobs:0,cor:0,eng:0},
+      'Março':{vis:19,imobs:15,cor:77,eng:8.9},'Abril':{vis:62,imobs:32,cor:228,eng:9.6},
+      'Maio':{vis:1,imobs:1,cor:1,eng:10.0},'Junho':{vis:0,imobs:0,cor:0,eng:0},
+    },
+    top_imobs:{
+      'todos':[{i:'Casarão',v:8},{i:'Luan Teixeira',v:8},{i:'Doro e Lauz',v:6},{i:'Nova Era',v:6}],
+      'Janeiro':[],'Fevereiro':[],
+      'Março':[{i:'Doro e Lauz',v:4},{i:'Casarão',v:2}],
+      'Abril':[{i:'Casarão',v:6},{i:'Luan Teixeira',v:6},{i:'Nova Era',v:6}],
+      'Maio':[{i:'Petry',v:1}],'Junho':[],
+    },
+  },
+];
+
+const VISITAS_MES = {
+  'todos':{vis:277,imobs:89,cor:759,eng:9.3},
+  'Janeiro':{vis:57,imobs:27,cor:57,eng:9.0},
+  'Fevereiro':{vis:8,imobs:6,cor:8,eng:9.0},
+  'Março':{vis:85,imobs:37,cor:247,eng:9.4},
+  'Abril':{vis:126,imobs:72,cor:446,eng:9.4},
+  'Maio':{vis:1,imobs:1,cor:1,eng:10.0},
+  'Junho':{vis:0,imobs:0,cor:0,eng:0},
+};
+
+const TOP_IMOB_MES = {
+  'todos':[{i:'Emana',v:16},{i:'5 Imob',v:15},{i:'Luan Teixeira',v:14},{i:'Une',v:12},
+    {i:'Doro e Lauz',v:11},{i:'Casarão',v:10},{i:'Villar',v:10},{i:'Rejane Sigal',v:9},
+    {i:'Up',v:7},{i:'Krolow',v:7},{i:'Ame',v:6},{i:'Fuhro Souto',v:6},
+    {i:'Nova Era',v:6},{i:'Requinte',v:6},{i:'Otávio Vaz',v:5}],
+  'Janeiro':[{i:'Villar',v:6},{i:'Krolow',v:4},{i:'5 Imob',v:4},{i:'Une',v:4},{i:'Emana',v:3}],
+  'Fevereiro':[{i:'Outros',v:3},{i:'5 Imob',v:1},{i:'Casarão',v:1}],
+  'Março':[{i:'5 Imob',v:7},{i:'Emana',v:7},{i:'Une',v:7},{i:'Luan Teixeira',v:7}],
+  'Abril':[{i:'Nova Era',v:6},{i:'Luan Teixeira',v:6},{i:'Emana',v:6},{i:'Casarão',v:6}],
+  'Maio':[{i:'Petry',v:1}],
+  'Junho':[],
+};
+
+const FEEDBACKS = {
+  'todos':{
+    pauta_tipos:[
+      {label:'Visita imobiliária',n:61},{label:'Conversa informal',n:40},
+      {label:'Apresent./treinamento',n:37},{label:'Apres. campanha',n:23},
+      {label:'Follow Up',n:10},{label:'Atendimento cliente',n:9},
+    ],
+    boas_praticas:['Sempre sair com próximo passo combinado','Visita presencial para follow up','Treinamento de produto antes de ligações','Aproximação frequente com corretores importantes','Levar mimos — presentear campeões de vendas'],
+    melhorias:[
+      {tema:'Produto / infraestrutura',pct:28,cor:'#8B2E2E',itens:['Melhorar estado do apto da 3 de maio','Unidades precisam de espera para lareira']},
+      {tema:'Material e preparação',pct:22,cor:'#C9943A',itens:['Levar material físico nas visitas','Pautas mais focadas em negócio']},
+      {tema:'Autonomia comercial',pct:18,cor:'#5a7a9a',itens:['Autonomia para aceitar propostas na hora','Mais leads novos']},
+      {tema:'Positivo — sem melhorias',pct:32,cor:'#4a8c4a',itens:['Visita foi ótima','Apresentação excelente']},
+    ],
+    insights:[
+      {tag:'Lançamento',txt:'Corretores sugerem que próximo lançamento seja Loft',tipo:'sugestao'},
+      {tag:'Premiação',txt:'Premiar campeões com viagem',tipo:'ideia'},
+      {tag:'Parceria',txt:'Ex-equipe Bagé montou nova imobiliária',tipo:'oportunidade'},
+    ],
+    negocios_destaque:[
+      {imob:'Lang',item:'504 RMZ — cliente Marta Robe'},{imob:'Une',item:'702 RMZ — venda + dação'},
+      {imob:'Villar',item:'Cessão direitos sala Tower'},{imob:'Fuhro Souto',item:'Apto Cassiano — concluída'},
+    ],
+  },
+  'Março':{
+    pauta_tipos:[{label:'Visita imobiliária',n:20},{label:'Conversa informal',n:15},{label:'Apresent./treinamento',n:18}],
+    boas_praticas:['Deixar próximo passo ao final da visita','Treinamento antes de ligações'],
+    melhorias:[{tema:'Produto',pct:30,cor:'#8B2E2E',itens:['Melhorar apto 3 de maio']},{tema:'Positivo',pct:40,cor:'#4a8c4a',itens:['Visitas excelentes']}],
+    insights:[{tag:'Produto',txt:'Sugestão: decorar aptos facilita venda',tipo:'sugestao'}],
+    negocios_destaque:[{imob:'Fuhro Souto',item:'Apto Cassiano'},{imob:'Lang',item:'504 RMZ'}],
+  },
+  'Abril':{
+    pauta_tipos:[{label:'Apres. campanha',n:23},{label:'Visita imobiliária',n:35},{label:'Follow Up',n:5}],
+    boas_praticas:['Levar mimos de páscoa gerou receptividade','Estreitar relação com lideranças'],
+    melhorias:[{tema:'Produto',pct:25,cor:'#8B2E2E',itens:['Limpeza das unidades RMZ']},{tema:'Positivo',pct:50,cor:'#4a8c4a',itens:['Maioria das visitas positivas']}],
+    insights:[{tag:'Negócio',txt:'Proposta terreno na Osório',tipo:'oportunidade'}],
+    negocios_destaque:[{imob:'Casarão',item:'Sala 809 Office'},{imob:'Up',item:'Sala Office com dação'}],
+  },
+};
+
 
 // fillAll preenche tabelas estáticas
 function fillAll() {
