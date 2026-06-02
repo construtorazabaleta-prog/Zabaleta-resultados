@@ -4466,77 +4466,64 @@ function dcOP(id){ if(CHS_OP[id]){try{CHS_OP[id].destroy()}catch(e){}delete CHS_
 async function loadOperacional() {
   LIVE_OP_loaded = true;
   const overlay = document.getElementById('loading-overlay');
-  if(overlay){ overlay.style.display='flex'; overlay.innerHTML=`<div style="text-align:center"><div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:#4a6a8a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--t)">Carregando Operacional</div></div>`; }
+  if(overlay){ overlay.style.display='flex'; overlay.innerHTML='<div style="text-align:center"><div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:#4a6a8a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:600;color:var(--t)">Carregando Operacional</div></div>'; }
+
+  // Parser PT-BR: "R$ 1.707.615,00" → 1707615
+  const pR = x => { if(!x||x==='') return 0; const s=String(x).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim(); const v=parseFloat(s); return isNaN(v)?0:v; };
+  // Parser %: "9,69%" → 0.0969, "1,15%" → 0.0115
+  const pP = x => { if(!x||x==='') return 0; const s=String(x).replace(/%/g,'').replace(/\./g,'').replace(',','.').trim(); const v=parseFloat(s); return isNaN(v)?0:v/100; };
 
   try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_OP}/values/${encodeURIComponent(ABA_OP_TOWER)}?key=${API_KEY}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_OP}/values/TOWER?key=${API_KEY}`;
     const res = await fetch(url);
-    if(!res.ok) throw new Error('Erro '+res.status);
-    const rows = (await res.json()).values || [];
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const rows = data.values || [];
+    if(rows.length < 2) throw new Error('Sem dados');
 
-    if(rows.length < 2) throw new Error('Sem dados na aba TOWER');
+    const h = rows[0].map(x=>x.trim());
+    console.log('Headers TOWER:', h);
 
-    const headers = rows[0].map(h=>h.trim());
-    const getIdx = name => {
-      // Busca exata primeiro
-      let i = headers.findIndex(h=>h.toLowerCase().trim()===name.toLowerCase().trim());
-      if(i>=0) return i;
-      // Busca parcial como fallback
-      return headers.findIndex(h=>h.toLowerCase().includes(name.toLowerCase()));
+    // Encontrar índices pelos nomes exatos
+    const gi = n => h.findIndex(x=>x.trim().toUpperCase()===n.toUpperCase());
+    const gi2 = n => h.findIndex(x=>x.trim().toUpperCase().includes(n.toUpperCase()));
+
+    const cols = {
+      data:    0,
+      custEsp: gi('CUSTO ESPERADO') >= 0 ? gi('CUSTO ESPERADO') : 1,
+      custAcEsp: gi2('CUSTO ACUMULADO ESPERADO') >= 0 ? gi2('CUSTO ACUMULADO ESPERADO') : 2,
+      custReal: gi('CUSTO REALIZADO') >= 0 ? gi('CUSTO REALIZADO') : 3,
+      pctObra: gi('% DE OBRA EXECUTADA') >= 0 ? gi('% DE OBRA EXECUTADA') : 7,
+      avMes:   gi2('AVANÇO DO MÊS') >= 0 ? gi2('AVANÇO DO MÊS') : 8,
+      espMes:  gi('ESPERADO PARA O MÊS') >= 0 ? gi('ESPERADO PARA O MÊS') : 9,
+      avAcEsp: gi('AVANÇO ACUMULADO ESPERADO') >= 0 ? gi('AVANÇO ACUMULADO ESPERADO') : 10,
+      tarefas: gi2('TAREFAS') >= 0 ? gi2('TAREFAS') : 11,
+      custReal_cubs: 14,
+      resultado: 17,
     };
+    console.log('Colunas detectadas:', cols);
+    console.log('Row1 sample:', rows[1]);
 
-    console.log('Headers TOWER:', headers);
-    // Índices baseados na estrutura conhecida da planilha
-    const iData      = 0;
-    const iCustEsp   = 1;
-    const iCustAcEsp = 2;
-    const iCustReal  = 3;
-    const iPctObra   = 7;   // % DE OBRA EXECUTADA
-    const iAvanco    = 8;   // AVANÇO DO MÊS
-    const iEspMes    = 9;   // ESPERADO PARA O MÊS
-    const iAvAcEsp   = 10;  // AVANÇO ACUMULADO ESPERADO
-    const iTarefas   = 11;  // TAREFAS MENSAIS...
-    const iResultado = 17;  // RESULTADO EM CUBS
-    const iCustRealCubs = 14; // CUSTO REALIZADO EM CUBS
-    console.log('Headers[7-11]:', headers[7], headers[8], headers[9], headers[10]);
-
-    const sfR = x => {
-      if(x===null||x===undefined||x==='') return 0;
-      const s = String(x).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim();
-      const v = parseFloat(s);
-      return isNaN(v)||!isFinite(v)?0:v;
-    };
-    const sfPct = x => {
-      if(x===null||x===undefined||x==='') return 0;
-      const s = String(x).replace('%','').replace(/\./g,'').replace(',','.').trim();
-      const v = parseFloat(s);
-      if(isNaN(v)||!isFinite(v)) return 0;
-      return v/100; // '9,69%' → 9.69 → 0.0969
-    };
-    const sf = sfR;
-
-    LIVE_OP.tower = rows.slice(1).filter(r=>r[0]).map(r => ({
-      mes:          iData>=0?(r[iData]||''):r[0]||'',
-      custo_esp:    sfR(r[iCustEsp]),
-      custo_acum_esp: sfR(r[iCustAcEsp]),
-      custo_real:   sfR(r[iCustReal]),
-      pct_obra:     sfPct(r[iPctObra]),
-      avanco_mes:   sfPct(r[iAvanco]),
-      esp_mes:      sfPct(r[iEspMes]),
-      avanco_acum_esp: sfPct(r[iAvAcEsp]),
-      tarefas:      sfR(r[iTarefas]),
-      resultado_cubs: sfR(r[iResultado]),
+    LIVE_OP.tower = rows.slice(1).filter(r=>r&&r[0]).map(r => ({
+      mes:          r[cols.data] || '',
+      custo_esp:    pR(r[cols.custEsp]),
+      custo_acum_esp: pR(r[cols.custAcEsp]),
+      custo_real:   pR(r[cols.custReal]),
+      pct_obra:     pP(r[cols.pctObra]),
+      avanco_mes:   pP(r[cols.avMes]),
+      esp_mes:      pP(r[cols.espMes]),
+      avanco_acum_esp: pP(r[cols.avAcEsp]),
+      tarefas:      pR(r[cols.tarefas]),
+      resultado_cubs: pR(r[cols.resultado]),
     }));
 
-    renderOperacional();
-    console.log('✅ Operacional carregado:', LIVE_OP.tower.length, 'registros');
-  } catch(err) {
-    console.error('Erro Operacional:', err);
-    // Fallback com dados hardcoded
+    console.log('✅ Operacional:', LIVE_OP.tower.length, 'registros. Amostra:', LIVE_OP.tower[0]);
     renderOperacional();
     loadCompras();
+  } catch(err) {
+    console.error('❌ Erro Operacional:', err);
   }
-  if(overlay) overlay.style.display = 'none';
+  if(overlay) overlay.style.display='none';
 }
 
 function formatMesOP(s) {
