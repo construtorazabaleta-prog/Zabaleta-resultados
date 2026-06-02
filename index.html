@@ -713,6 +713,44 @@ td.c{text-align:center}
     </table></div>
   </div>
 </div>
+<div class="divider"></div>
+
+<!-- ══ DISTRATOS ══ -->
+<div class="sec-head">
+  <span class="sec-num">4</span>
+  <span class="sec-title">Distratos</span>
+  <span class="sec-sub" id="dist-sub">Conectado ao Financeiro</span>
+</div>
+<div class="krow">
+  <div class="card red" onclick="toggle('dist-detail')">
+    <div class="klbl">Total distratos</div><div class="kval" id="dist-total-v">—</div>
+    <div class="ksub">contratos</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('dist-detail')">
+    <div class="klbl">Valor a devolver</div><div class="kval" id="dist-devolver-v">—</div>
+    <div class="ksub">total</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('dist-detail')">
+    <div class="klbl">Valor retido</div><div class="kval" id="dist-retido-v">—</div>
+    <div class="ksub">total</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('dist-detail')">
+    <div class="klbl">+ distratos</div><div class="kval" id="dist-emp-v" style="font-size:16px">—</div>
+    <div class="ksub">empreendimento</div><span class="kchev">▼</span>
+  </div>
+</div>
+<div class="drawer" id="dist-detail">
+  <div class="drawer-inner">
+    <div class="dt">Distratos — histórico completo</div>
+    <div class="ds">Dados sincronizados com o painel Financeiro</div>
+    <div class="tw"><table>
+      <thead><tr><th>Data</th><th>Doc</th><th>Empreendimento</th><th>Unidade</th>
+        <th class="r">Vlr. Contrato</th><th class="r">Vlr. Recebido</th>
+        <th class="r">Vlr. a Devolver</th><th class="r">Vlr. Retido</th><th>Cliente</th></tr></thead>
+      <tbody id="tb-dist-comercial"></tbody>
+    </table></div>
+  </div>
+</div>
 
 <div class="divider"></div>
 
@@ -1264,6 +1302,33 @@ td.c{text-align:center}
 
 <div class="divider"></div>
 
+<!-- ══ KPIs DETALHADOS ══ -->
+<div class="sec-head"><span class="sec-num" style="background:#1a4a6b">📊</span><span class="sec-title">Detalhamento por Empreendimento</span><span class="sec-sub">Período Jan–Mai vs anual previsto</span></div>
+<div style="margin-bottom:10px">
+  <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">TOWER</div>
+  <div class="krow">
+    <div class="card no-click"><div class="klbl">Rec. realizado</div><div class="kval" id="fin-tw-rec-real-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Rec. previsto</div><div class="kval" id="fin-tw-rec-prev-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Pag. realizado</div><div class="kval" id="fin-tw-pag-real-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Pag. previsto</div><div class="kval" id="fin-tw-pag-prev-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Rec. anual prev.</div><div class="kval" id="fin-tw-rec-anual">—</div><div class="ksub">2026 total</div></div>
+    <div class="card no-click"><div class="klbl">Pag. anual prev.</div><div class="kval" id="fin-tw-pag-anual">—</div><div class="ksub">2026 total</div></div>
+  </div>
+</div>
+<div style="margin-bottom:4px">
+  <div style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">OFFICE</div>
+  <div class="krow">
+    <div class="card no-click"><div class="klbl">Rec. realizado</div><div class="kval" id="fin-of-rec-real-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Rec. previsto</div><div class="kval" id="fin-of-rec-prev-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Pag. realizado</div><div class="kval" id="fin-of-pag-real-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Pag. previsto</div><div class="kval" id="fin-of-pag-prev-per">—</div><div class="ksub">Jan–Mai</div></div>
+    <div class="card no-click"><div class="klbl">Rec. anual prev.</div><div class="kval" id="fin-of-rec-anual">—</div><div class="ksub">2026 total</div></div>
+    <div class="card no-click"><div class="klbl">Pag. anual prev.</div><div class="kval" id="fin-of-pag-anual">—</div><div class="ksub">2026 total</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
 <!-- ══ INADIMPLÊNCIA ══ -->
 <div class="sec-head"><span class="sec-num" style="background:#6b1a1a">!</span><span class="sec-title">Inadimplência</span><span class="sec-sub">Acumulada e mensal</span></div>
 <div class="krow">
@@ -1326,39 +1391,6 @@ td.c{text-align:center}
     <div class="dt">Evolução dos saldos bancários — Tower</div>
     <div class="ds">Por banco · Jan–Dez 2026</div>
     <div style="position:relative;height:220px"><canvas id="cFinBanco"></canvas></div>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<!-- ══ DISTRATOS ══ -->
-<div class="sec-head"><span class="sec-num" style="background:#5a1a1a">D</span><span class="sec-title">Distratos</span><span class="sec-sub">Histórico completo</span></div>
-<div class="krow">
-  <div class="card red" onclick="toggleFin('fin-distratos')">
-    <div class="klbl">Total distratos</div><div class="kval" id="fin-dist-total">—</div>
-    <div class="ksub">contratos</div><span class="kchev">▼</span>
-  </div>
-  <div class="card" onclick="toggleFin('fin-distratos')">
-    <div class="klbl">Valor a devolver</div><div class="kval" id="fin-dist-devolver">—</div>
-    <div class="ksub">total</div><span class="kchev">▼</span>
-  </div>
-  <div class="card" onclick="toggleFin('fin-distratos')">
-    <div class="klbl">Valor retido</div><div class="kval" id="fin-dist-retido">—</div>
-    <div class="ksub">total</div><span class="kchev">▼</span>
-  </div>
-  <div class="card" onclick="toggleFin('fin-distratos')">
-    <div class="klbl">Empreendimento</div><div class="kval" id="fin-dist-emp" style="font-size:16px">—</div>
-    <div class="ksub">mais distratos</div><span class="kchev">▼</span>
-  </div>
-</div>
-<div class="drawer" id="fin-distratos">
-  <div class="drawer-inner">
-    <div class="dt">Distratos — tabela completa</div>
-    <div class="ds">Todos os contratos distratados</div>
-    <div class="tw"><table>
-      <thead><tr><th>Data</th><th>Doc</th><th>Empreendimento</th><th>Unidade</th><th class="r">Vlr. Contrato</th><th class="r">Vlr. Recebido</th><th class="r">Vlr. a Devolver</th><th class="r">Vlr. Retido</th><th>Cliente</th></tr></thead>
-      <tbody id="tb-fin-distratos"></tbody>
-    </table></div>
   </div>
 </div>
 
@@ -2469,6 +2501,33 @@ function renderGerentesVisitas() {
   });
 }
 
+function renderDistratosComercial() {
+  const dist = (typeof LIVE_FIN !== 'undefined' && LIVE_FIN?.distratos) || [];
+  if(!dist.length) return;
+  const totDev=dist.reduce((a,d)=>a+d.devolver,0);
+  const totRet=dist.reduce((a,d)=>a+d.retido,0);
+  const empCnt=dist.reduce((a,d)=>{a[d.emp]=(a[d.emp]||0)+1;return a},{});
+  const lider=Object.entries(empCnt).sort((a,b)=>b[1]-a[1])[0];
+  const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  sv('dist-total-v',dist.length); sv('dist-devolver-v',fR(totDev));
+  sv('dist-retido-v',fR(totRet)); sv('dist-emp-v',lider?lider[0]:'—');
+  sv('dist-sub',dist.length+' contratos');
+  const tb=document.getElementById('tb-dist-comercial');
+  if(tb&&!tb.innerHTML){
+    dist.forEach(d=>{
+      const tr=document.createElement('tr');
+      const data=String(d.data).replace(/(\d{4})-(\d{2})-(\d{2}).*/,'$3/$2/$1');
+      tr.innerHTML=`<td>${data}</td><td>${d.doc}</td><td style="color:var(--t)">${d.emp}</td>
+        <td>${d.unidade}</td>
+        <td class="r">${d.contrato>0?fR(d.contrato):'—'}</td>
+        <td class="r">${d.recebido>0?fR(d.recebido):'—'}</td>
+        <td class="r" style="color:#c07070">${d.devolver>0?fR(d.devolver):'—'}</td>
+        <td class="r" style="color:#7abf7a">${d.retido>0?fR(d.retido):'—'}</td>
+        <td style="font-size:11px;color:var(--t3)">${d.cliente}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+}
 function renderPerdidos() {
   const perdidos = LIVE_DATA.perdidos || [];
   const sub = MES_ATIVO === 'todos' ? perdidos : perdidos.filter(p => p.mes === MES_ATIVO);
@@ -4088,6 +4147,25 @@ function renderFinanceiro() {
   }
 
   if(openDrawersFin.size) openDrawersFin.forEach(id=>buildChartFin(id));
+
+  // KPIs detalhados por empreendimento
+  const sv2=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  const sumA=(arr,a,b)=>(arr||[]).slice(a,b).reduce((x,y)=>x+(y||0),0);
+  sv2('fin-tw-rec-real-per',fRFin(sumA(tw.rec_realizado,0,5)));
+  sv2('fin-tw-rec-prev-per',fRFin(sumA(tw.rec_previsto,0,5)));
+  sv2('fin-tw-pag-real-per',fRFin(sumA(tw.pag_realizado,0,5)));
+  sv2('fin-tw-pag-prev-per',fRFin(sumA(tw.pag_previsto,0,5)));
+  sv2('fin-tw-rec-anual',   fRFin(sumA(tw.rec_previsto,0,12)));
+  sv2('fin-tw-pag-anual',   fRFin(sumA(tw.pag_previsto,0,12)));
+  sv2('fin-of-rec-real-per',fRFin(sumA(of.rec_realizado,0,5)));
+  sv2('fin-of-rec-prev-per',fRFin(sumA(of.rec_previsto,0,5)));
+  sv2('fin-of-pag-real-per',fRFin(sumA(of.pag_realizado,0,5)));
+  sv2('fin-of-pag-prev-per',fRFin(sumA(of.pag_previsto,0,5)));
+  sv2('fin-of-rec-anual',   fRFin(sumA(of.rec_previsto,0,12)));
+  sv2('fin-of-pag-anual',   fRFin(sumA(of.pag_previsto,0,12)));
+
+  // Distratos no comercial (cross-module)
+  renderDistratosComercial();
 }
 
 function toggleFin(id) {
