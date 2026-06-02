@@ -3104,10 +3104,10 @@ const ABAS_RH = {
   desempenho: 'Desempenho do Colaborador',
   endomkt:    'Número de ações de endomarketing do mês',
   pdi:        'Custos com PDI/Desenvolvimento',
-  rec:        'Recrutamento e Seleção',
+  rec:        'Recrutamento e Seleção ',
   reunioes:   'Reniões RH',
   termometro: 'Termômetro',
-  faltasTower:'Dados Obra',
+  faltasTower:'Dados Obra ',
 };
 
 let LIVE_RH = {};
@@ -3216,7 +3216,7 @@ async function loadRH() {
       mes:normDataRH(r['Mês']), emp:r['Empreendimento']||'',
       cargo:(r['Vagas Abertas']||'').trim(),
       qtd:parseFloat(r['Quantidade'])||0,
-      tempo:parseFloat(r['Tempo entre demanda por contratação e contratação efetivada']||r['Tempo entre demanda por contratação e contratação efetivada '])||0,
+      tempo:(()=>{ const keys=Object.keys(r).filter(k=>k.startsWith('Tempo')); return keys.length?parseFloat(r[keys[0]])||0:0; })(),
       entrevistas:parseFloat(r['Entrevistas'])||0,
       aprovados:parseFloat(r['Candidatos Aprovados'])||0,
     })).filter(r=>r.cargo&&r.qtd>0);
