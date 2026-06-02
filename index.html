@@ -4500,7 +4500,20 @@ async function loadOperacional() {
     const iCustRealCubs = 14; // CUSTO REALIZADO EM CUBS
     console.log('Headers[7-11]:', headers[7], headers[8], headers[9], headers[10]);
 
-    const sf = x => { try { const v=parseFloat(x); return isNaN(v)||!isFinite(v)?0:v; } catch(e){return 0;} };
+    const sfR = x => {
+      if(x===null||x===undefined||x==='') return 0;
+      const s = String(x).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim();
+      const v = parseFloat(s);
+      return isNaN(v)||!isFinite(v)?0:v;
+    };
+    const sfPct = x => {
+      if(x===null||x===undefined||x==='') return 0;
+      const s = String(x).replace('%','').replace(/\./g,'').replace(',','.').trim();
+      const v = parseFloat(s);
+      if(isNaN(v)||!isFinite(v)) return 0;
+      return v/100; // '9,69%' → 9.69 → 0.0969
+    };
+    const sf = sfR;
 
     LIVE_OP.tower = rows.slice(1).filter(r=>r[0]).map(r => ({
       mes:          iData>=0?(r[iData]||''):r[0]||'',
@@ -4511,8 +4524,8 @@ async function loadOperacional() {
       avanco_mes:   sfPct(r[iAvanco]),
       esp_mes:      sfPct(r[iEspMes]),
       avanco_acum_esp: sfPct(r[iAvAcEsp]),
-      tarefas:      sf(r[iTarefas]),
-      resultado_cubs: sf(r[iResultado]),
+      tarefas:      sfR(r[iTarefas]),
+      resultado_cubs: sfR(r[iResultado]),
     }));
 
     renderOperacional();
@@ -4749,20 +4762,7 @@ async function loadCompras() {
     const comCols  = [gi('Com. 1'),gi('Com. 2'),gi('Com. 3'),gi('Com. 4'),gi('Com. 5')];
 
     // Parser PT-BR: 'R$ 1.707.615,00' → 1707615, '9,69%' → 0.0969, '1,15%' → 0.0115
-    const sfR = x => {
-      if(x===null||x===undefined||x==='') return 0;
-      const s = String(x).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim();
-      const v = parseFloat(s);
-      return isNaN(v)||!isFinite(v)?0:v;
-    };
-    const sfPct = x => {
-      if(x===null||x===undefined||x==='') return 0;
-      const s = String(x).replace('%','').replace(/\./g,'').replace(',','.').trim();
-      const v = parseFloat(s);
-      if(isNaN(v)||!isFinite(v)) return 0;
-      return v/100; // '9,69%' → 9.69 → 0.0969
-    };
-    const sf = sfR;
+    
     const fmtData = s => { if(!s) return ''; try { const d=new Date(s+'T12:00:00Z'); if(isNaN(d)) return s; return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); } catch(e){return s;} };
     const getMes = s => { if(!s) return ''; try { const d=new Date(s+'T12:00:00Z'); if(isNaN(d)) return ''; const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return ms[d.getUTCMonth()]+'/'+d.getUTCFullYear(); } catch(e){return ''; } };
 
