@@ -3184,13 +3184,35 @@ const parsePtBRRH = s => { if(!s&&s!==0) return 0; const c=String(s).replace(/R\
 const capMes = s => { if(!s) return ''; const m=String(s).split('/')[0].trim(); return m.charAt(0).toUpperCase()+m.slice(1).toLowerCase(); };
 const normData = s => {
   if(!s) return '';
+  const str = String(s).trim();
+
+  // Já está no formato "agosto/2024" ou "janeiro/2026" — só normalizar abreviatura
+  const mesesPT = {
+    'janeiro':'jan.','fevereiro':'fev.','março':'mar.','abril':'abr.',
+    'maio':'mai.','junho':'jun.','julho':'jul.','agosto':'ago.',
+    'setembro':'set.','outubro':'out.','novembro':'nov.','dezembro':'dez.'
+  };
+  const matchNome = str.match(/^(\w+)\/(\d{4})$/i);
+  if(matchNome) {
+    const mes = matchNome[1].toLowerCase();
+    const ano = matchNome[2];
+    const abrev = mesesPT[mes] || mes.substring(0,3)+'.';
+    return abrev + ' de ' + ano;
+  }
+
+  // Formato "jan. de 2024" já correto — retornar como está
+  if(/\w+\. de \d{4}/.test(str)) return str;
+
+  // Tentar como data ISO "2024-08-01"
   try {
-    const d = new Date(s);
-    if(isNaN(d)) return String(s).trim();
-    // Sempre retorna "Jan/2024" sem dia
-    const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    return meses[d.getMonth()] + '. de ' + d.getFullYear();
-  } catch(e) { return String(s).trim(); }
+    const d = new Date(str);
+    if(!isNaN(d)) {
+      const meses = ['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'];
+      return meses[d.getUTCMonth()] + ' de ' + d.getUTCFullYear();
+    }
+  } catch(e) {}
+
+  return str;
 };
 
 const cdoRH = {
