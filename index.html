@@ -4437,6 +4437,18 @@ function switchTab(tab) {
 // ══════ OPERACIONAL MODULE ══════
 const SHEET_COMP = '15i-gTYygRs-zoZBNWRpvt8Cv1JHnqIUdETdkxVgWtZ8';
 const ABA_COMP = 'Planilha1';
+// Fallback: tentar detectar a aba correta
+async function getAbaComp() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_COMP}?key=${API_KEY}`;
+  const res = await fetch(url);
+  if(!res.ok) return ABA_COMP;
+  const d = await res.json();
+  const sheets = d.sheets||[];
+  console.log('Abas disponíveis no Compras:', sheets.map(s=>s.properties.title));
+  // Pegar primeira aba com dados
+  const first = sheets.find(s=>s.properties.title !== 'Página1');
+  return first ? first.properties.title : ABA_COMP;
+}
 let LIVE_COMP = {};
 
 
@@ -4486,10 +4498,10 @@ async function loadOperacional() {
       custo_esp:    sf(r[iCustEsp]),
       custo_acum_esp: sf(r[iCustAcEsp]),
       custo_real:   sf(r[iCustReal]),
-      pct_obra:     sf(r[iPctObra]),
-      avanco_mes:   sf(r[iAvanco]),
-      esp_mes:      sf(r[iEspMes]),
-      avanco_acum_esp: sf(r[iAvAcEsp]),
+      pct_obra:     (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iPctObra]),
+      avanco_mes:   (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iAvanco]),
+      esp_mes:      (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iEspMes]),
+      avanco_acum_esp: (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iAvAcEsp]),
       tarefas:      sf(r[iTarefas]),
       resultado_cubs: sf(r[iResultado]),
     }));
@@ -4533,8 +4545,10 @@ function renderOperacional() {
 
   const sv = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
 
-  const pctReal = (ultimo.pct_obra||ultimo.avanco_mes||0)*100;
-  const pctEsp  = espNoPeriodo*100;
+  // Normalizar: se valor > 1, já está em % (ex: 9.69), senão é decimal (0.0969)
+  const normPct = v => v > 1 ? v : v * 100;
+  const pctReal = normPct(ultimo.pct_obra||ultimo.avanco_mes||0);
+  const pctEsp  = normPct(espNoPeriodo);
   const diff    = pctReal - pctEsp;
 
   sv('op-avanco-real',   pctReal.toFixed(2)+'%');
@@ -4573,8 +4587,8 @@ function renderOperacional() {
       tr.innerHTML=`
         <td style="color:${temReal?'var(--t)':'var(--t3)'};font-weight:${temReal?'600':'400'}">${r.mesLabel}</td>
         <td class="r">${(r.esp_mes*100).toFixed(2)}%</td>
-        <td class="r">${temReal?(r.avanco_mes>0?r.avanco_mes*100:r.pct_obra*100).toFixed(2)+'%':'<span style="color:var(--t3)">—</span>'}</td>
-        <td class="r">${(r.avanco_acum_esp*100).toFixed(2)}%</td>
+        <td class="r">${temReal?(normPct(r.avanco_mes>0?r.avanco_mes:r.pct_obra)).toFixed(2)+'%':'<span style="color:var(--t3)">—</span>'}</td>
+        <td class="r">${normPct(r.avanco_acum_esp).toFixed(2)}%</td>
         <td class="r">${r.custo_esp>0?fROP(r.custo_esp):'—'}</td>
         <td class="r">${r.custo_real>0?'<span style="color:var(--t)">'+fROP(r.custo_real)+'</span>':'<span style="color:var(--t3)">—</span>'}</td>
         <td class="r">${r.tarefas>0?r.tarefas.toFixed(1):'—'}</td>`;
@@ -4590,10 +4604,11 @@ function renderOperacional() {
   const labels = comCron.map(r=>r.mesLabel);
 
   // Curva S
-  const espAcum = comCron.map(r=>parseFloat((r.avanco_acum_esp*100).toFixed(2)));
+  const normP = v => v > 1 ? v : v * 100;
+  const espAcum = comCron.map(r=>parseFloat(normP(r.avanco_acum_esp).toFixed(2)));
   const realAcum = comCron.map(r=>{
-    if(r.pct_obra>0) return parseFloat((r.pct_obra*100).toFixed(2));
-    if(r.avanco_mes>0) return parseFloat((r.avanco_mes*100).toFixed(2));
+    if(r.pct_obra>0) return parseFloat(normP(r.pct_obra).toFixed(2));
+    if(r.avanco_mes>0) return parseFloat(normP(r.avanco_mes).toFixed(2));
     return null;
   });
 
@@ -4601,9 +4616,9 @@ function renderOperacional() {
   let acum = 0;
   const realAcumCalc = comCron.map(r=>{
     if(r.avanco_mes>0||r.pct_obra>0){
-      const v = r.avanco_mes>0?r.avanco_mes:r.pct_obra;
+      const v = normP(r.avanco_mes>0?r.avanco_mes:r.pct_obra);
       acum += v;
-      return parseFloat((acum*100).toFixed(2));
+      return parseFloat(acum.toFixed(2));
     }
     return null;
   });
@@ -4699,7 +4714,8 @@ function renderOperacional() {
 
 async function loadCompras() {
   try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_COMP}/values/${encodeURIComponent(ABA_COMP)}?key=${API_KEY}`;
+    const abaReal = await getAbaComp();
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_COMP}/values/${encodeURIComponent(abaReal)}?key=${API_KEY}`;
     const res = await fetch(url);
     if(!res.ok) throw new Error('Erro '+res.status);
     const rows = (await res.json()).values || [];
@@ -4755,6 +4771,7 @@ async function loadCompras() {
     console.log('✅ Compras carregadas:', LIVE_COMP.pedidos.length, 'pedidos');
   } catch(err) {
     console.error('Erro Compras:', err);
+    console.error('URL tentada:', `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_COMP}/values/${encodeURIComponent(ABA_COMP)}?key=${API_KEY}`);
     renderCompras(); // renderizar sem dados
   }
 }
