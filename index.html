@@ -165,6 +165,7 @@ td.c{text-align:center}
     <button class="mod-tab active" id="tab-comercial" onclick="switchTab('comercial')">Comercial</button>
     <button class="mod-tab" id="tab-rh" onclick="switchTab('rh')">RH</button>
     <button class="mod-tab" id="tab-financeiro" onclick="switchTab('financeiro')">Financeiro</button>
+    <button class="mod-tab" id="tab-operacional" onclick="switchTab('operacional')">Operacional</button>
   </div>
 
   <!-- FILTRO MÊS COMERCIAL (2026) -->
@@ -1395,7 +1396,169 @@ td.c{text-align:center}
 </div>
 
 <div style="height:40px"></div>
-</div><!-- /pane-rh -->
+</div>
+
+<!-- ══ PANE OPERACIONAL ══ -->
+<div id="pane-operacional" class="wrap" style="display:none">
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:10px 0;border-bottom:1px solid var(--b)">
+  <div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--t)">Tower — Indicadores de Obra</div>
+    <div style="font-size:11px;color:var(--t3)">Custo total orçado: R$ 62,55M · Conclusão prevista: Out/2028</div>
+  </div>
+  <button onclick="loadOperacional()" style="font-size:11px;padding:3px 12px;background:var(--bg3);border:1px solid var(--b);border-radius:4px;color:var(--t3);cursor:pointer">↺ Atualizar</button>
+</div>
+
+<!-- KPIs ──────────────────── -->
+<div class="krow">
+  <div class="card red">
+    <div class="klbl">Avanço medido</div>
+    <div class="kval" id="op-avanco-real">—<sub>%</sub></div>
+    <div class="ksub" id="op-avanco-real-s">último medido</div>
+  </div>
+  <div class="card">
+    <div class="klbl">Avanço esperado</div>
+    <div class="kval" id="op-avanco-esp">—<sub>%</sub></div>
+    <div class="ksub" id="op-avanco-esp-s">no mesmo período</div>
+  </div>
+  <div class="card" id="op-status-card">
+    <div class="klbl">Status</div>
+    <div class="kval" id="op-status" style="font-size:16px">—</div>
+    <div class="ksub" id="op-status-s">em relação ao cronograma</div>
+  </div>
+  <div class="card">
+    <div class="klbl">Custo realizado</div>
+    <div class="kval" id="op-custo-real">—</div>
+    <div class="ksub" id="op-custo-real-s">acumulado</div>
+  </div>
+  <div class="card">
+    <div class="klbl">Custo esperado</div>
+    <div class="kval" id="op-custo-esp">—</div>
+    <div class="ksub" id="op-custo-esp-s">no mesmo período</div>
+  </div>
+  <div class="card gold">
+    <div class="klbl">Resultado financeiro</div>
+    <div class="kval" id="op-resultado">—</div>
+    <div class="ksub" id="op-resultado-s">economia/desvio</div>
+  </div>
+</div>
+
+<!-- CURVA S ──────────────────── -->
+<div class="drawer-inner" style="margin-bottom:14px">
+  <div class="dt">Curva S — Avanço físico da obra</div>
+  <div class="ds">Linha azul = cronograma esperado · Pontos vermelhos = avanço medido real · Escala: % da obra concluída</div>
+  <div style="position:relative;height:320px"><canvas id="cOpCurvaS"></canvas></div>
+</div>
+
+<!-- CUSTO MENSAL ──────────────────── -->
+<div class="drawer-inner" style="margin-bottom:14px">
+  <div class="dt">Custo mensal — Esperado vs Realizado</div>
+  <div class="ds">Barras cinza = orçado · Barra vermelha = realizado · Em R$</div>
+  <div style="position:relative;height:260px"><canvas id="cOpCusto"></canvas></div>
+</div>
+
+<!-- TABELA ──────────────────── -->
+<div class="drawer-inner">
+  <div class="dt">Histórico detalhado</div>
+  <div class="ds">Todos os períodos com dados do cronograma e realizados</div>
+  <div class="tw"><table>
+    <thead><tr>
+      <th>Mês</th>
+      <th class="r">Avanço Esp. Mês</th>
+      <th class="r">Avanço Medido</th>
+      <th class="r">Acum. Esperado</th>
+      <th class="r">Custo Esperado</th>
+      <th class="r">Custo Realizado</th>
+      <th class="r">Tarefas</th>
+    </tr></thead>
+    <tbody id="tb-op-tower"></tbody>
+  </table></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ COMPRAS TOWER ══ -->
+<div class="sec-head">
+  <span class="sec-num" style="background:#2a5a3a">🛒</span>
+  <span class="sec-title">Compras — Tower</span>
+  <span class="sec-sub" id="comp-sub">Carregando...</span>
+</div>
+
+<div class="krow">
+  <div class="card red" onclick="toggle('comp-detail')">
+    <div class="klbl">Total pedidos</div><div class="kval" id="comp-total">—</div>
+    <div class="ksub" id="comp-total-s">histórico</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('comp-detail')">
+    <div class="klbl">Taxa de entrega</div><div class="kval" id="comp-entrega">—<sub>%</sub></div>
+    <div class="ksub">chegaram no prazo</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('comp-detail')">
+    <div class="klbl">Média de orçamentos</div><div class="kval" id="comp-orcamentos">—</div>
+    <div class="ksub">por pedido</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('comp-detail')">
+    <div class="klbl">Intervalo médio</div><div class="kval" id="comp-intervalo">—<sub>d</sub></div>
+    <div class="ksub">pedido → compra</div><span class="kchev">▼</span>
+  </div>
+  <div class="card gold" onclick="toggle('comp-detail')">
+    <div class="klbl">Fornecedor líder</div>
+    <div class="kval" id="comp-forn" style="font-size:15px;line-height:1.2">—</div>
+    <div class="ksub" id="comp-forn-s">mais pedidos</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggle('comp-detail')">
+    <div class="klbl">≥2 orçamentos</div><div class="kval" id="comp-2orc">—<sub>%</sub></div>
+    <div class="ksub">dos pedidos comparados</div><span class="kchev">▼</span>
+  </div>
+</div>
+
+<div class="drawer" id="comp-detail">
+  <div class="drawer-inner">
+    <div class="dt">Compras — análise completa</div>
+    <div class="ds" id="comp-drawer-sub">Dados do período</div>
+
+    <div class="g2" style="margin-bottom:16px">
+      <!-- Pedidos por mês -->
+      <div>
+        <div class="dt" style="font-size:12px;margin-bottom:6px">Pedidos por mês</div>
+        <div style="position:relative;height:180px"><canvas id="cCompMes"></canvas></div>
+      </div>
+      <!-- Média de orçamentos por mês -->
+      <div>
+        <div class="dt" style="font-size:12px;margin-bottom:6px">Média de orçamentos por mês</div>
+        <div style="position:relative;height:180px"><canvas id="cCompOrc"></canvas></div>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-bottom:16px">
+      <!-- Top fornecedores -->
+      <div>
+        <div class="dt" style="font-size:12px;margin-bottom:8px">Top fornecedores escolhidos</div>
+        <div id="comp-forn-bars"></div>
+      </div>
+      <!-- Distribuição por tipo -->
+      <div>
+        <div class="dt" style="font-size:12px;margin-bottom:6px">Distribuição por tipo</div>
+        <div style="position:relative;height:180px"><canvas id="cCompTipo"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Tabela de pedidos recentes -->
+    <div class="dt" style="font-size:12px;margin-bottom:8px">Últimos pedidos</div>
+    <div class="tw"><table>
+      <thead><tr>
+        <th>Data</th><th>Descrição</th><th>Tipo</th><th>Solicitante</th>
+        <th class="r">Orçamentos</th><th class="r">Intervalo</th>
+        <th>Fornecedor</th><th>Chegou?</th>
+      </tr></thead>
+      <tbody id="tb-comp"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div style="height:40px"></div>
+</div><!-- /pane-operacional -->
+<!-- /pane-rh -->
 <!-- /wrap -->
 
 
@@ -4260,12 +4423,431 @@ function switchTab(tab) {
   document.getElementById('pane-comercial').style.display = tab==='comercial'?'':'none';
   document.getElementById('pane-rh').style.display = tab==='rh'?'':'none';
   document.getElementById('pane-financeiro').style.display = tab==='financeiro'?'':'none';
+  document.getElementById('pane-operacional').style.display = tab==='operacional'?'':'none';
   const filtroMes = document.getElementById('filtro-mes-wrap');
   if(filtroMes) filtroMes.style.display = tab==='comercial'?'flex':'none';
   if(tab==='rh' && !LIVE_RH_RH_loaded) loadRH();
   if(tab==='financeiro' && !LIVE_FIN_loaded) loadFinanceiro();
+  if(tab==='operacional' && !LIVE_OP_loaded) loadOperacional();
 }
 
+
+
+
+// ══════ OPERACIONAL MODULE ══════
+const SHEET_COMP = '15i-gTYygRs-zoZBNWRpvt8Cv1JHnqIUdETdkxVgWtZ8';
+const ABA_COMP = 'Planilha1';
+let LIVE_COMP = {};
+
+
+// ══ OPERACIONAL — TOWER DATA ══
+const SHEET_OP = '14Lo3aTZ33kv2DnFCTuVtMXXdXSs-_YQThvLMO-W6sXA';
+const ABA_OP_TOWER = 'TOWER';
+
+let LIVE_OP = {};
+let LIVE_OP_loaded = false;
+let CHS_OP = {};
+
+const fROP = n => { if(!n) return '—'; const a=Math.abs(n); return (n<0?'-':'')+(a>=1e6?'R$ '+(a/1e6).toFixed(2)+'M':a>=1e3?'R$ '+(a/1e3).toFixed(0)+'k':'R$ '+Math.round(a)); };
+function dcOP(id){ if(CHS_OP[id]){try{CHS_OP[id].destroy()}catch(e){}delete CHS_OP[id];} }
+
+async function loadOperacional() {
+  LIVE_OP_loaded = true;
+  const overlay = document.getElementById('loading-overlay');
+  if(overlay){ overlay.style.display='flex'; overlay.innerHTML=`<div style="text-align:center"><div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:#4a6a8a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--t)">Carregando Operacional</div></div>`; }
+
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_OP}/values/${encodeURIComponent(ABA_OP_TOWER)}?key=${API_KEY}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Erro '+res.status);
+    const rows = (await res.json()).values || [];
+
+    if(rows.length < 2) throw new Error('Sem dados na aba TOWER');
+
+    const headers = rows[0].map(h=>h.trim());
+    const getIdx = name => headers.findIndex(h=>h.toLowerCase().includes(name.toLowerCase()));
+
+    const iData   = 0;
+    const iCustEsp= getIdx('CUSTO ESPERADO');
+    const iCustAcEsp = getIdx('CUSTO ACUMULADO ESPERADO');
+    const iCustReal  = getIdx('CUSTO REALIZADO');
+    const iPctObra   = getIdx('% DE OBRA EXECUTADA');
+    const iAvanco    = getIdx('AVANÇO DO MÊS');
+    const iEspMes    = getIdx('ESPERADO PARA O MÊS');
+    const iAvAcEsp   = getIdx('AVANÇO ACUMULADO ESPERADO');
+    const iTarefas   = getIdx('TAREFAS MENSAIS');
+    const iResultado = getIdx('RESULTADO EM CUBS');
+    const iCustRealCubs = getIdx('CUSTO REALIZADO EM CUBS');
+
+    const sf = x => { try { const v=parseFloat(x); return isNaN(v)||!isFinite(v)?0:v; } catch(e){return 0;} };
+
+    LIVE_OP.tower = rows.slice(1).filter(r=>r[0]).map(r => ({
+      mes:          r[iData]||'',
+      custo_esp:    sf(r[iCustEsp]),
+      custo_acum_esp: sf(r[iCustAcEsp]),
+      custo_real:   sf(r[iCustReal]),
+      pct_obra:     sf(r[iPctObra]),
+      avanco_mes:   sf(r[iAvanco]),
+      esp_mes:      sf(r[iEspMes]),
+      avanco_acum_esp: sf(r[iAvAcEsp]),
+      tarefas:      sf(r[iTarefas]),
+      resultado_cubs: sf(r[iResultado]),
+    }));
+
+    renderOperacional();
+    console.log('✅ Operacional carregado:', LIVE_OP.tower.length, 'registros');
+  } catch(err) {
+    console.error('Erro Operacional:', err);
+    // Fallback com dados hardcoded
+    renderOperacional();
+    loadCompras();
+  }
+  if(overlay) overlay.style.display = 'none';
+}
+
+function formatMesOP(s) {
+  if(!s) return '';
+  // "2026-04-01 00:00:00" → "Abr/2026"
+  try {
+    const d = new Date(s+'T12:00:00Z');
+    if(isNaN(d)) return s;
+    const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return ms[d.getUTCMonth()]+'/'+d.getUTCFullYear();
+  } catch(e){ return s; }
+}
+
+function renderOperacional() {
+  const data = LIVE_OP.tower || [];
+  if(!data.length) return;
+
+  // Formatar meses
+  const rows = data.map(r=>({...r, mesLabel: formatMesOP(r.mes)}));
+
+  // Último mês com avanço real
+  const comReal = rows.filter(r=>r.pct_obra>0||r.avanco_mes>0);
+  const ultimo = comReal[comReal.length-1] || rows[rows.length-1];
+
+  // Último avanço acumulado esperado no mesmo período
+  const idxUltimo = rows.indexOf(ultimo);
+  const espNoPeriodo = rows.slice(0,idxUltimo+1).reduce((a,r)=>a+r.esp_mes,0);
+
+  const sv = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+
+  const pctReal = (ultimo.pct_obra||ultimo.avanco_mes||0)*100;
+  const pctEsp  = espNoPeriodo*100;
+  const diff    = pctReal - pctEsp;
+
+  sv('op-avanco-real',   pctReal.toFixed(2)+'%');
+  sv('op-avanco-real-s', ultimo.mesLabel);
+  sv('op-avanco-esp',    pctEsp.toFixed(2)+'%');
+  sv('op-avanco-esp-s',  'cronograma até '+ultimo.mesLabel);
+
+  const statusEl = document.getElementById('op-status');
+  const statusCard = document.getElementById('op-status-card');
+  if(statusEl) {
+    if(pctReal === 0) { statusEl.textContent='Sem medição'; }
+    else if(diff >= 0) { statusEl.textContent='✅ Adiantado'; statusEl.style.color='#7abf7a'; }
+    else if(diff >= -0.02) { statusEl.textContent='⚠️ No prazo'; statusEl.style.color='#d4a855'; }
+    else { statusEl.textContent='❌ Atrasado'; statusEl.style.color='#c07070'; }
+  }
+  sv('op-status-s', diff!==0?(diff>0?'+':'')+diff.toFixed(2)+'% vs cronograma':'');
+
+  sv('op-custo-real',   fROP(ultimo.custo_real));
+  sv('op-custo-real-s', 'acumulado até '+ultimo.mesLabel);
+  const custEspPeriodo = rows.slice(0,idxUltimo+1).reduce((a,r)=>a+r.custo_esp,0);
+  sv('op-custo-esp',    fROP(custEspPeriodo));
+  sv('op-custo-esp-s',  'orçado até '+ultimo.mesLabel);
+
+  const economia = custEspPeriodo - (ultimo.custo_real||0);
+  sv('op-resultado',    fROP(Math.abs(economia)));
+  sv('op-resultado-s',  economia>=0?'economia':'estouro de custo');
+
+  // Tabela
+  const tb = document.getElementById('tb-op-tower');
+  if(tb) {
+    tb.innerHTML='';
+    rows.filter(r=>r.avanco_acum_esp>0||r.pct_obra>0).forEach(r=>{
+      const temReal = r.pct_obra>0||r.avanco_mes>0;
+      const tr=document.createElement('tr');
+      tr.style.opacity = temReal?'1':'0.55';
+      tr.innerHTML=`
+        <td style="color:${temReal?'var(--t)':'var(--t3)'};font-weight:${temReal?'600':'400'}">${r.mesLabel}</td>
+        <td class="r">${(r.esp_mes*100).toFixed(2)}%</td>
+        <td class="r">${temReal?(r.avanco_mes>0?r.avanco_mes*100:r.pct_obra*100).toFixed(2)+'%':'<span style="color:var(--t3)">—</span>'}</td>
+        <td class="r">${(r.avanco_acum_esp*100).toFixed(2)}%</td>
+        <td class="r">${r.custo_esp>0?fROP(r.custo_esp):'—'}</td>
+        <td class="r">${r.custo_real>0?'<span style="color:var(--t)">'+fROP(r.custo_real)+'</span>':'<span style="color:var(--t3)">—</span>'}</td>
+        <td class="r">${r.tarefas>0?r.tarefas.toFixed(1):'—'}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  // Charts
+  dcOP('cOpCurvaS'); dcOP('cOpCusto');
+
+  // Filtrar registros com dados de cronograma
+  const comCron = rows.filter(r=>r.avanco_acum_esp>0);
+  const labels = comCron.map(r=>r.mesLabel);
+
+  // Curva S
+  const espAcum = comCron.map(r=>parseFloat((r.avanco_acum_esp*100).toFixed(2)));
+  const realAcum = comCron.map(r=>{
+    if(r.pct_obra>0) return parseFloat((r.pct_obra*100).toFixed(2));
+    if(r.avanco_mes>0) return parseFloat((r.avanco_mes*100).toFixed(2));
+    return null;
+  });
+
+  // Calcular acumulado real (soma dos avanços mensais)
+  let acum = 0;
+  const realAcumCalc = comCron.map(r=>{
+    if(r.avanco_mes>0||r.pct_obra>0){
+      const v = r.avanco_mes>0?r.avanco_mes:r.pct_obra;
+      acum += v;
+      return parseFloat((acum*100).toFixed(2));
+    }
+    return null;
+  });
+
+  CHS_OP['cOpCurvaS'] = new Chart(document.getElementById('cOpCurvaS'),{
+    type:'line',
+    data:{labels,datasets:[
+      {
+        label:'Cronograma esperado',
+        data:espAcum,
+        borderColor:'rgba(80,130,200,.7)',
+        backgroundColor:'rgba(80,130,200,.06)',
+        tension:.4, fill:true, pointRadius:0, borderWidth:2,
+      },
+      {
+        label:'Realizado',
+        data:realAcumCalc,
+        borderColor:'#8B2E2E',
+        backgroundColor:'rgba(139,46,46,.15)',
+        tension:.3, fill:false,
+        pointRadius:comCron.map(r=>r.pct_obra>0||r.avanco_mes>0?6:0),
+        pointBackgroundColor:'#8B2E2E',
+        pointBorderColor:'#fff',
+        pointBorderWidth:2,
+        borderWidth:2.5,
+        spanGaps:false,
+      },
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:12,font:{size:11}}},
+        tooltip:{
+          backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.raw?.toFixed(2)||'—'}%`}
+        },
+        annotation:{
+          annotations:{
+            hoje:{type:'line',xMin:labels.indexOf(ultimo.mesLabel),xMax:labels.indexOf(ultimo.mesLabel),
+              borderColor:'rgba(255,255,255,.2)',borderWidth:1,borderDash:[4,4],
+              label:{display:true,content:'Hoje',color:'#9a9490',font:{size:10}}}
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9},maxRotation:45,
+          callback:(v,i)=>i%3===0?labels[i]:null}},
+        y:{
+          grid:{color:'rgba(255,255,255,.04)'},
+          ticks:{color:'#5e5c58',callback:v=>v+'%'},
+          min:0, max:100,
+        }
+      }
+    }
+  });
+
+  // Custo mensal
+  const comCronRecente = comCron.filter((_,i)=>i<20); // primeiros 20 meses
+  const labCusto = comCronRecente.map(r=>r.mesLabel);
+  CHS_OP['cOpCusto'] = new Chart(document.getElementById('cOpCusto'),{
+    type:'bar',
+    data:{labels:labCusto,datasets:[
+      {
+        label:'Custo orçado (R$)',
+        data:comCronRecente.map(r=>r.custo_esp),
+        backgroundColor:'rgba(255,255,255,.08)',
+        borderRadius:3,
+      },
+      {
+        label:'Custo realizado (R$)',
+        data:comCronRecente.map(r=>r.custo_real||null),
+        backgroundColor:'#8B2E2E',
+        borderRadius:3,
+      },
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:12,font:{size:11}}},
+        tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490',
+          callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fROP(ctx.raw)}`}
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9},maxRotation:45}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1e6).toFixed(1)+'M'}}
+      }
+    }
+  });
+}
+
+
+
+async function loadCompras() {
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_COMP}/values/${encodeURIComponent(ABA_COMP)}?key=${API_KEY}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Erro '+res.status);
+    const rows = (await res.json()).values || [];
+    if(rows.length < 2) return;
+
+    const h = rows[0].map(x=>x.trim());
+    const gi = name => h.findIndex(x=>x.toLowerCase().includes(name.toLowerCase()));
+
+    const iData   = gi('Data pedido');
+    const iSolic  = gi('Solicitante');
+    const iTipo   = gi('Tipo');
+    const iDesc   = gi('Descrição');
+    const iDataC  = gi('Data Compra');
+    const iChegou = gi('Chegou?');
+    const iNOrc   = gi('Nº de orçamentos');
+    const iIntv   = gi('Intervalo');
+    const iValor  = gi('Valor Compra');
+    const iEcon   = gi('Economia');
+
+    // Colunas de orçamento e fornecedor
+    const orcCols  = [gi('Orç. 1'),gi('Orç. 2'),gi('Orç. 3'),gi('Orç. 4'),gi('Orç. 5')];
+    const fornCols = [gi('Forn. 1'),gi('Forn. 2'),gi('Forn. 3'),gi('Forn. 4'),gi('Forn. 5')];
+    const comCols  = [gi('Com. 1'),gi('Com. 2'),gi('Com. 3'),gi('Com. 4'),gi('Com. 5')];
+
+    const sf = x => { try { const v=parseFloat(x); return isNaN(v)||!isFinite(v)?null:v; } catch(e){return null;} };
+    const fmtData = s => { if(!s) return ''; try { const d=new Date(s+'T12:00:00Z'); if(isNaN(d)) return s; return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); } catch(e){return s;} };
+    const getMes = s => { if(!s) return ''; try { const d=new Date(s+'T12:00:00Z'); if(isNaN(d)) return ''; const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return ms[d.getUTCMonth()]+'/'+d.getUTCFullYear(); } catch(e){return ''; } };
+
+    LIVE_COMP.pedidos = rows.slice(1).filter(r=>r[iData]).map(r=>{
+      // Contar orçamentos reais
+      const nOrc = orcCols.filter(c=>c>=0&&r[c]&&r[c].trim()!=='').length;
+      // Fornecedor escolhido
+      let fornEscolhido = '';
+      comCols.forEach((c,i)=>{ if(c>=0 && r[c] && r[c].toString().trim().toLowerCase()==='x') fornEscolhido = (r[fornCols[i]]||'').trim(); });
+      // Intervalo real
+      let intervalo = null;
+      if(r[iData]&&r[iDataC]) {
+        const dp = new Date(r[iData]+'T12:00:00Z'), dc = new Date(r[iDataC]+'T12:00:00Z');
+        const diff = Math.round((dc-dp)/(1000*60*60*24));
+        if(diff >= 0) intervalo = diff;
+      }
+      return {
+        data: r[iData]||'', dataLabel: fmtData(r[iData]), mes: getMes(r[iData]),
+        solicitante: (r[iSolic]||'').trim(), tipo: (r[iTipo]||'').trim(),
+        desc: (r[iDesc]||'').trim(), dataCompra: r[iDataC]||'',
+        chegou: (r[iChegou]||'').trim().toUpperCase()==='SIM',
+        nOrc, fornEscolhido, intervalo,
+        valor: sf(r[iValor]), economia: sf(r[iEcon]),
+      };
+    });
+
+    renderCompras();
+    console.log('✅ Compras carregadas:', LIVE_COMP.pedidos.length, 'pedidos');
+  } catch(err) {
+    console.error('Erro Compras:', err);
+    renderCompras(); // renderizar sem dados
+  }
+}
+
+function renderCompras() {
+  const pedidos = LIVE_COMP.pedidos || [];
+  if(!pedidos.length) { document.getElementById('comp-sub').textContent='Sem dados'; return; }
+
+  const total = pedidos.length;
+  const chegaram = pedidos.filter(p=>p.chegou).length;
+  const taxaEntrega = Math.round(chegaram/total*100);
+  const com2Orc = pedidos.filter(p=>p.nOrc>=2).length;
+  const pct2Orc = Math.round(com2Orc/total*100);
+  const orcMedio = pedidos.reduce((a,p)=>a+p.nOrc,0)/total;
+  const comIntv = pedidos.filter(p=>p.intervalo!==null);
+  const intvMedio = comIntv.length ? comIntv.reduce((a,p)=>a+p.intervalo,0)/comIntv.length : 0;
+
+  // Fornecedor líder
+  const fornCnt = {};
+  pedidos.forEach(p=>{ if(p.fornEscolhido) fornCnt[p.fornEscolhido]=(fornCnt[p.fornEscolhido]||0)+1; });
+  const fornSorted = Object.entries(fornCnt).sort((a,b)=>b[1]-a[1]);
+  const lider = fornSorted[0];
+
+  // Meses
+  const meses = [...new Set(pedidos.map(p=>p.mes))].filter(Boolean).sort((a,b)=>{
+    const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const pa=a.split('/'), pb=b.split('/');
+    return parseInt(pa[1])*12+ms.indexOf(pa[0]) - (parseInt(pb[1])*12+ms.indexOf(pb[0]));
+  });
+  const pedMes = meses.map(m=>pedidos.filter(p=>p.mes===m).length);
+  const orcMes = meses.map(m=>{ const s=pedidos.filter(p=>p.mes===m); return parseFloat((s.reduce((a,p)=>a+p.nOrc,0)/s.length).toFixed(2)); });
+
+  // Tipos
+  const tipoCnt = {};
+  pedidos.forEach(p=>{ if(p.tipo) tipoCnt[p.tipo]=(tipoCnt[p.tipo]||0)+1; });
+
+  // Atualizar KPIs
+  const sv=(id,v,s)=>{ const e=document.getElementById(id); if(e) e.textContent=v; const es=document.getElementById(id+'-s'); if(es&&s!==undefined) es.textContent=s; };
+  sv('comp-total', total, total+' pedidos');
+  sv('comp-entrega', taxaEntrega+'%', chegaram+' chegaram');
+  sv('comp-orcamentos', orcMedio.toFixed(1), 'em média');
+  sv('comp-intervalo', intvMedio.toFixed(1)+'d', 'pedido → compra');
+  sv('comp-forn', lider?lider[0]:'—', lider?lider[1]+' pedidos':'');
+  sv('comp-2orc', pct2Orc+'%', com2Orc+' pedidos');
+  document.getElementById('comp-sub').textContent = total+' pedidos · '+meses[0]+' a '+meses[meses.length-1];
+
+  // Fornecedores bars
+  const el=document.getElementById('comp-forn-bars');
+  if(el){
+    const top=fornSorted.slice(0,8); const mx=top[0]?.[1]||1;
+    el.innerHTML=top.map(([f,n])=>`<div class="pr"><div class="pr-lbl">${f}</div><div class="pr-track"><div class="pr-fill" style="width:${Math.round(n/mx*100)}%;background:#2a5a3a"></div></div><div class="pr-val">${n}</div></div>`).join('');
+  }
+
+  // Tabela (últimos 30)
+  const tb=document.getElementById('tb-comp');
+  if(tb){
+    tb.innerHTML='';
+    [...pedidos].reverse().slice(0,30).forEach(p=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td style="white-space:nowrap">${p.dataLabel}</td>
+        <td style="color:var(--t);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.desc}">${p.desc}</td>
+        <td><span class="tag ${p.tipo==='GRANDE'?'ty':'tgray'}">${p.tipo}</span></td>
+        <td>${p.solicitante}</td>
+        <td class="r">${p.nOrc}</td>
+        <td class="r">${p.intervalo!==null?p.intervalo+'d':'—'}</td>
+        <td style="font-size:11px">${p.fornEscolhido||'—'}</td>
+        <td><span class="tag ${p.chegou?'tg':'tr2'}">${p.chegou?'✓':'Pend.'}</span></td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  // Charts
+  dcOP('cCompMes'); dcOP('cCompOrc'); dcOP('cCompTipo');
+
+  CHS_OP['cCompMes'] = new Chart(document.getElementById('cCompMes'),{
+    type:'bar',
+    data:{labels:meses,datasets:[{data:pedMes,backgroundColor:meses.map((_,i)=>i===meses.length-1?'#8B2E2E':'rgba(139,46,46,.4)'),borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e1e1e',bodyColor:'#9a9490',callbacks:{label:ctx=>` ${ctx.raw} pedidos`}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58'}}}}
+  });
+
+  CHS_OP['cCompOrc'] = new Chart(document.getElementById('cCompOrc'),{
+    type:'line',
+    data:{labels:meses,datasets:[{data:orcMes,borderColor:'#C9943A',backgroundColor:'rgba(201,148,58,.08)',tension:.3,fill:true,pointRadius:4,pointBackgroundColor:'#C9943A'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e1e1e',bodyColor:'#9a9490',callbacks:{label:ctx=>` ${ctx.raw} orç./pedido`}}},scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',stepSize:0.5},min:0,max:Math.max(...orcMes)+0.5}}}
+  });
+
+  const tipoEntries=Object.entries(tipoCnt);
+  CHS_OP['cCompTipo'] = new Chart(document.getElementById('cCompTipo'),{
+    type:'doughnut',
+    data:{labels:tipoEntries.map(e=>e[0]),datasets:[{data:tipoEntries.map(e=>e[1]),backgroundColor:['#8B2E2E','#C9943A','#5a7a9a','#4a8c4a'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}},tooltip:{backgroundColor:'#1e1e1e',bodyColor:'#9a9490'}}}
+  });
+}
 
 </script>
 
