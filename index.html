@@ -3096,6 +3096,36 @@ function setKPI(id, val, sub) {
   if(ks) ks.textContent = sub;
 }
 
+// fillAll preenche tabelas estáticas
+function fillAll() {
+  // Tabela INCC MZ
+  const tincc = document.getElementById('tb-incc-mz');
+  if(tincc && !tincc.innerHTML) {
+    const INCC_MZ=[
+      {un:'301',lanc:825000,at:1022251},{un:'302',lanc:898900,at:1113820},
+      {un:'303',lanc:742500,at:920026},{un:'304',lanc:556500,at:716000},
+      {un:'305',lanc:809100,at:1002549},{un:'306',lanc:695640,at:861962},
+      {un:'307',lanc:489600,at:606659},{un:'308',lanc:482400,at:597738},
+      {un:'401',lanc:840000,at:1040837},{un:'402',lanc:909000,at:1126334},
+      {un:'403',lanc:756000,at:936753},{un:'404',lanc:567000,at:702565},
+      {un:'501',lanc:850000,at:1053228},{un:'503',lanc:765000,at:947905},
+      {un:'601',lanc:860000,at:1065619},{un:'603',lanc:774000,at:959057},
+      {un:'701',lanc:870000,at:1078010},{un:'702',lanc:919100,at:1138849},
+      {un:'801',lanc:880000,at:1090401},{un:'802',lanc:929200,at:1151364},
+    ];
+    INCC_MZ.forEach(u=>{
+      const v=((u.at/u.lanc)-1)*100;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td style="color:var(--t);font-weight:500">Apto ${u.un}</td>
+        <td class="r">R$ ${u.lanc.toLocaleString('pt-BR')}</td>
+        <td class="r" style="color:var(--t)">R$ ${u.at.toLocaleString('pt-BR')}</td>
+        <td class="r"><span class="tag tg">+${v.toFixed(1)}%</span></td>
+        <td class="r up">+R$ ${(u.at-u.lanc).toLocaleString('pt-BR')}</td>`;
+      tincc.appendChild(tr);
+    });
+  }
+}
+
 fillAll();
 renderGerentes();
 renderGerentesVisitas();
