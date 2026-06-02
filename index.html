@@ -3182,7 +3182,16 @@ const fRRH = n => { const a=Math.abs(n); return (n<0?'-':'')+(a>=1e6?'R$ '+(a/1e
 function dcRH(id){ if(CHS_RH[id]){try{CHS_RH[id].destroy()}catch(e){}delete CHS_RH[id];} }
 const parsePtBRRH = s => { if(!s&&s!==0) return 0; const c=String(s).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.'); return parseFloat(c)||0; };
 const capMes = s => { if(!s) return ''; const m=String(s).split('/')[0].trim(); return m.charAt(0).toUpperCase()+m.slice(1).toLowerCase(); };
-const normData = s => { if(!s) return ''; try { const d=new Date(s); if(isNaN(d)) return s; return d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}); } catch(e){return s;} };
+const normData = s => {
+  if(!s) return '';
+  try {
+    const d = new Date(s);
+    if(isNaN(d)) return String(s).trim();
+    // Sempre retorna "Jan/2024" sem dia
+    const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    return meses[d.getMonth()] + '. de ' + d.getFullYear();
+  } catch(e) { return String(s).trim(); }
+};
 
 const cdoRH = {
   responsive:true, maintainAspectRatio:false,
