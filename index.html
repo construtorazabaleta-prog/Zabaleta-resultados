@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+*<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -166,21 +166,10 @@ td.c{text-align:center}
     <button class="mod-tab" id="tab-rh" onclick="switchTab('rh')">RH</button>
   </div>
 
-  <!-- FILTRO ANO + MÊS — só aparece no comercial -->
-  <div id="filtro-mes-wrap" style="display:flex;align-items:center;gap:10px;margin-left:20px">
-    <div style="display:flex;align-items:center;gap:4px">
-      <span style="font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap">Ano</span>
-      <div id="ano-filters" style="display:flex;gap:3px">
-        <button class="mf active" id="ano-todos">Todos</button>
-      </div>
-    </div>
-    <div style="width:1px;height:16px;background:var(--b)"></div>
-    <div style="display:flex;align-items:center;gap:4px">
-      <span style="font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap">Mês</span>
-      <div id="mes-filters" style="display:flex;gap:3px">
-        <button class="mf active" id="mes-todos">Todos</button>
-      </div>
-    </div>
+  <!-- FILTRO MÊS COMERCIAL (2026) -->
+  <div id="filtro-mes-wrap" style="display:flex;align-items:center;gap:6px;margin-left:20px">
+    <span style="font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap">Mês 2026</span>
+    <div id="mes-filters" style="display:flex;gap:3px"></div>
   </div>
 
   <!-- AÇÕES -->
@@ -874,51 +863,17 @@ td.c{text-align:center}
 <div style="height:40px"></div>
 </div><!-- /wrap -->
 <div id="pane-rh" class="wrap" style="display:none">
-<div style="display:flex;align-items:center;gap:6px;margin-bottom:20px;flex-wrap:wrap">
-  <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">Período</span>
-  <div id="mes-filter-rh" style="display:flex;gap:4px;flex-wrap:wrap">
-    <button class="mf active" onclick="setMesRH('todos',this)">Todos</button>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--b)">
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">Ano</span>
+    <div id="ano-filter-rh" style="display:flex;gap:3px"></div>
+  </div>
+  <div style="width:1px;height:14px;background:var(--b)"></div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">Mês</span>
+    <div id="mes-filter-rh" style="display:flex;gap:3px;flex-wrap:wrap"></div>
   </div>
   <button onclick="loadRH()" style="margin-left:auto;font-size:11px;padding:3px 10px;background:var(--bg3);border:1px solid var(--b);border-radius:4px;color:var(--t3);cursor:pointer">↺ Atualizar RH</button>
-</div>
-
-<!-- FILTRO DE MÊS -->
-<div class="mes-filter" id="mes-filter">
-  <span class="mes-label">Período</span>
-  <button class="mf active" onclick="setMes('todos',this)">Todos</button>
-</div>
-
-<!-- ══ 1. NPS INTERNO ══ -->
-<div class="sec-head fi">
-  <span class="sec-num">1</span>
-  <span class="sec-title">NPS Interno</span>
-  <span class="sec-sub">Satisfação dos colaboradores</span>
-</div>
-<div class="krow fi">
-  <div class="card red" onclick="toggleRH('nps-detail')">
-    <div class="klbl">NPS Score</div>
-    <div class="kval" id="nps-score">—</div>
-    <div class="ksub" id="nps-score-s">último período</div>
-    <span class="kchev">▼</span>
-  </div>
-  <div class="card" onclick="toggleRH('nps-detail')">
-    <div class="klbl">Melhor resultado</div>
-    <div class="kval" id="nps-best">—</div>
-    <div class="ksub" id="nps-best-s">histórico</div>
-    <span class="kchev">▼</span>
-  </div>
-  <div class="card" onclick="toggleRH('nps-detail')">
-    <div class="klbl">Última medição</div>
-    <div class="kval" id="nps-last">—</div>
-    <div class="ksub" id="nps-last-s">período</div>
-    <span class="kchev">▼</span>
-  </div>
-  <div class="card" onclick="toggleRH('nps-detail')">
-    <div class="klbl">Medições realizadas</div>
-    <div class="kval" id="nps-count">—</div>
-    <div class="ksub">pesquisas no histórico</div>
-    <span class="kchev">▼</span>
-  </div>
 </div>
 <div class="drawer" id="nps-detail">
   <div class="drawer-inner">
@@ -2772,100 +2727,40 @@ let LIVE_RH_RH_loaded = false;
 // LIVE_RH gerenciado pelo módulo RH;
 
 // Construir filtro de mês dinamicamente com dados reais
-// ── FILTRO ANO + MÊS ──
 let MES_ATIVO = 'todos';
-let ANO_ATIVO = 'todos';
 
-const MESES_ORDEM = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const MESES_ABREV = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+// ── FILTRO COMERCIAL — MESES 2026 ──
+const MESES_COMERCIAL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES_ABREV_C   = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 function buildMesesFilter() {
-  // Coletar todos os meses únicos dos dados ao vivo
-  const anosSet = new Set();
-  const mesesSet = new Set();
-
-  const fontes = [
-    ...(LIVE_DATA.vendas||[]),
-    ...(LIVE_DATA.estoque||[]),
-    ...(LIVE_DATA.visitas||[]),
-  ];
-
-  fontes.forEach(r => {
-    if(!r.mes) return;
-    const m = r.mes; // ex: "Janeiro", "Fevereiro"
-    mesesSet.add(m);
+  // Meses com dados reais em 2026
+  const comDados = new Set();
+  [...(LIVE_DATA.vendas||[]),...(LIVE_DATA.estoque||[]),...(LIVE_DATA.visitas||[])].forEach(r=>{
+    if(r.mes) comDados.add(r.mes);
   });
 
-  // Para anos, usar os dados de vendas que têm meses nomeados
-  // Inferir ano pelo contexto (2026 é o ano atual dos dados)
-  // Como os meses são apenas nomes sem ano, usamos 2026 por padrão
-  anosSet.add('2026');
-  anosSet.add('2025');
+  const nav = document.getElementById('mes-filters');
+  if(!nav) return;
+  nav.innerHTML = '';
 
-  // Filtrar meses com dados reais
-  const mesesComDados = MESES_ORDEM.filter(m => mesesSet.has(m));
+  const btnTodos = document.createElement('button');
+  btnTodos.className = 'mf active';
+  btnTodos.textContent = 'Todos';
+  btnTodos.onclick = () => setMes('todos', btnTodos);
+  nav.appendChild(btnTodos);
 
-  // Montar filtro de ANO
-  const navAno = document.getElementById('ano-filters');
-  if(navAno) {
-    navAno.innerHTML = '';
-    const btnAll = document.createElement('button');
-    btnAll.className = 'mf active'; btnAll.textContent = 'Todos';
-    btnAll.onclick = () => setAno('todos', btnAll);
-    navAno.appendChild(btnAll);
-    [...anosSet].sort().forEach(a => {
-      const btn = document.createElement('button');
-      btn.className = 'mf'; btn.textContent = a;
-      btn.onclick = () => setAno(a, btn);
-      navAno.appendChild(btn);
-    });
-  }
-
-  // Montar filtro de MÊS
-  const navMes = document.getElementById('mes-filters');
-  if(navMes) {
-    navMes.innerHTML = '';
-    const btnAll = document.createElement('button');
-    btnAll.className = 'mf active'; btnAll.textContent = 'Todos';
-    btnAll.onclick = () => setMes('todos', btnAll);
-    navMes.appendChild(btnAll);
-    mesesComDados.forEach((m, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'mf';
-      btn.textContent = MESES_ABREV[MESES_ORDEM.indexOf(m)] || m.substring(0,3);
-      btn.title = m;
-      btn.onclick = () => setMes(m, btn);
-      navMes.appendChild(btn);
-    });
-  }
-}
-
-function setAno(ano, btn) {
-  ANO_ATIVO = ano;
-  document.querySelectorAll('#ano-filters .mf').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // Ao mudar o ano, resetar filtro de mês
-  MES_ATIVO = 'todos';
-  document.querySelectorAll('#mes-filters .mf').forEach(b => b.classList.remove('active'));
-  const todosBtn = document.querySelector('#mes-filters .mf');
-  if(todosBtn) todosBtn.classList.add('active');
-  // Fechar drawers e atualizar
-  openDrawers.forEach(id => { const d=document.getElementById(id); if(d) d.classList.remove('open'); });
-  openDrawers.clear();
-  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-  ['tb-vend-all','tb-imob','meta-mes-cards','meta-cards-emp',
-   'top-imob-bars','tb-vis-negs','tb-est-all',
-   'tb-vend-tower','tb-vend-office','tb-vend-rmz','tb-vend-terc'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.innerHTML = '';
+  MESES_COMERCIAL.forEach((m, i) => {
+    if(!comDados.has(m)) return; // só mostra se tiver dados
+    const btn = document.createElement('button');
+    btn.className = 'mf';
+    btn.textContent = MESES_ABREV_C[i];
+    btn.title = m;
+    btn.onclick = () => setMes(m, btn);
+    nav.appendChild(btn);
   });
-  Object.keys(CHS).forEach(k => dc(k));
-  atualizarKPIs();
-  renderGerentes();
-  renderGerentesVisitas();
-  renderFunil();
-  renderPerdidos();
 }
+function setAno(ano, btn) { /* não usado no comercial */ }
 
 function setMes(mes, btn) {
   MES_ATIVO = mes;
@@ -3416,30 +3311,104 @@ async function loadRH() {
 }
 
 // ══ FILTRO ══
+// ── FILTRO RH: ANO + MÊS ──
+let ANO_RH = 'todos';
+
 function buildMesFilterRH() {
-  const mesesSet = new Set();
+  const anosSet = new Set();
+  const mesesPorAno = {}; // {ano: Set<mes>}
+
   Object.values(LIVE_RH).forEach(arr => {
-    if(Array.isArray(arr)) arr.forEach(r => { if(r && r.mes) mesesSet.add(r.mes); });
+    if(!Array.isArray(arr)) return;
+    arr.forEach(r => {
+      if(!r || !r.mes) return;
+      // r.mes vem como "ago. de 2024" ou "Jan/2024"
+      const m = r.mes;
+      // Extrair ano
+      const anoMatch = m.match(/\d{4}/);
+      const ano = anoMatch ? anoMatch[0] : '?';
+      anosSet.add(ano);
+      if(!mesesPorAno[ano]) mesesPorAno[ano] = new Set();
+      mesesPorAno[ano].add(m);
+    });
   });
-  const sorted = [...mesesSet].sort((a,b)=>new Date('01 '+a)-new Date('01 '+b));
 
-  const nav = document.getElementById('mes-filter-rh');
-  if(!nav) return;
-  nav.innerHTML = '';
+  // Montar filtro de ANO
+  const navAno = document.getElementById('ano-filter-rh');
+  if(navAno) {
+    navAno.innerHTML = '';
+    const btnA = document.createElement('button');
+    btnA.className = 'mf active'; btnA.textContent = 'Todos';
+    btnA.onclick = () => setAnoRH('todos', btnA);
+    navAno.appendChild(btnA);
+    [...anosSet].sort().forEach(a => {
+      const btn = document.createElement('button');
+      btn.className = 'mf'; btn.textContent = a;
+      btn.onclick = () => setAnoRH(a, btn);
+      navAno.appendChild(btn);
+    });
+  }
 
-  const btnTodos = document.createElement('button');
-  btnTodos.className = 'mf active';
-  btnTodos.textContent = 'Todos';
-  btnTodos.onclick = () => setMesRH('todos', btnTodos);
-  nav.appendChild(btnTodos);
+  // Montar filtro de MÊS
+  buildMesesRH(mesesPorAno);
+}
 
-  sorted.forEach(m=>{
+function buildMesesRH(mesesPorAno) {
+  const navMes = document.getElementById('mes-filter-rh');
+  if(!navMes) return;
+  navMes.innerHTML = '';
+
+  const btnM = document.createElement('button');
+  btnM.className = 'mf active'; btnM.textContent = 'Todos';
+  btnM.onclick = () => setMesRH('todos', btnM);
+  navMes.appendChild(btnM);
+
+  // Filtrar meses pelo ano ativo
+  let meses = [];
+  if(ANO_RH === 'todos') {
+    Object.values(mesesPorAno).forEach(s => s.forEach(m => meses.push(m)));
+  } else {
+    meses = mesesPorAno[ANO_RH] ? [...mesesPorAno[ANO_RH]] : [];
+  }
+
+  // Ordenar meses
+  meses = [...new Set(meses)].sort((a,b) => {
+    const getDate = s => { try { return new Date(s.replace(/(\w+)\. de (\d+)/, '$1 $2')); } catch(e) { return 0; } };
+    return getDate(a) - getDate(b);
+  });
+
+  meses.forEach(m => {
     const btn = document.createElement('button');
     btn.className = 'mf';
-    btn.textContent = m;
+    // Abreviar: "ago. de 2024" → "ago/24"
+    const abrev = m.replace(/(\w+)\. de (\d{4})/, (_, mes, ano) => mes+'/'+ano.slice(2))
+                   .replace(/(\w+)\/(\d{4})/, (_, mes, ano) => mes+'/'+ano.slice(2));
+    btn.textContent = abrev.length > 8 ? abrev.substring(0, 8) : abrev;
+    btn.title = m;
     btn.onclick = () => setMesRH(m, btn);
-    nav.appendChild(btn);
+    navMes.appendChild(btn);
   });
+}
+
+function setAnoRH(ano, btn) {
+  ANO_RH = ano;
+  MES_RH = 'todos';
+  document.querySelectorAll('#ano-filter-rh .mf').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Reconstruir filtro de meses para o ano selecionado
+  const mesesPorAno = {};
+  Object.values(LIVE_RH).forEach(arr => {
+    if(!Array.isArray(arr)) return;
+    arr.forEach(r => {
+      if(!r||!r.mes) return;
+      const anoMatch = r.mes.match(/\d{4}/);
+      const a = anoMatch ? anoMatch[0] : '?';
+      if(!mesesPorAno[a]) mesesPorAno[a] = new Set();
+      mesesPorAno[a].add(r.mes);
+    });
+  });
+  buildMesesRH(mesesPorAno);
+  renderAllRH();
 }
 
 function setMesRH(mes, btn) {
@@ -3454,8 +3423,14 @@ function setMesRH(mes, btn) {
 }
 
 function filtRH(arr, campo='mes') {
-  if(MES_RH==='todos') return arr;
-  return arr.filter(r=>r[campo]===MES_RH);
+  let result = arr;
+  if(ANO_RH !== 'todos') {
+    result = result.filter(r => r[campo] && r[campo].includes(ANO_RH));
+  }
+  if(MES_RH !== 'todos') {
+    result = result.filter(r => r[campo] === MES_RH);
+  }
+  return result;
 }
 
 // ══ TOGGLE ══
