@@ -164,6 +164,7 @@ td.c{text-align:center}
   <div style="display:flex;gap:0;border-bottom:none;align-self:stretch;align-items:flex-end">
     <button class="mod-tab active" id="tab-comercial" onclick="switchTab('comercial')">Comercial</button>
     <button class="mod-tab" id="tab-rh" onclick="switchTab('rh')">RH</button>
+    <button class="mod-tab" id="tab-financeiro" onclick="switchTab('financeiro')">Financeiro</button>
   </div>
 
   <!-- FILTRO MÊS COMERCIAL (2026) -->
@@ -1183,6 +1184,183 @@ td.c{text-align:center}
 </div>
 
 <div style="height:40px"></div>
+
+<!-- ══ PANE FINANCEIRO ══ -->
+<div id="pane-financeiro" class="wrap" style="display:none">
+
+<!-- FILTRO MÊS FINANCEIRO -->
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:20px;padding:10px 0;border-bottom:1px solid var(--b)">
+  <span style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">Mês 2026</span>
+  <div id="fin-mes-filters" style="display:flex;gap:3px">
+    <button class="mf active" id="fin-mes-todos">Todos</button>
+    <button class="mf">Jan</button><button class="mf">Fev</button><button class="mf">Mar</button>
+    <button class="mf">Abr</button><button class="mf">Mai</button><button class="mf">Jun</button>
+    <button class="mf">Jul</button><button class="mf">Ago</button><button class="mf">Set</button>
+    <button class="mf">Out</button><button class="mf">Nov</button><button class="mf">Dez</button>
+  </div>
+  <button onclick="loadFinanceiro()" style="margin-left:auto;font-size:11px;padding:3px 12px;background:var(--bg3);border:1px solid var(--b);border-radius:4px;color:var(--t3);cursor:pointer">↺ Atualizar</button>
+</div>
+
+<!-- ══ KPIs GERAIS ══ -->
+<div class="sec-head"><span class="sec-num" style="background:#1a4a6b">₢</span><span class="sec-title">Visão Geral — 2026</span><span class="sec-sub" id="fin-sub">Carregando...</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleFin('fin-recebimentos')">
+    <div class="klbl">Recebimento realizado</div><div class="kval" id="fin-rec-real">—</div>
+    <div class="ksub" id="fin-rec-real-s">acumulado</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-recebimentos')">
+    <div class="klbl">Recebimento previsto</div><div class="kval" id="fin-rec-prev">—</div>
+    <div class="ksub" id="fin-rec-prev-s">total ano</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-pagamentos')">
+    <div class="klbl">Pagamento realizado</div><div class="kval" id="fin-pag-real">—</div>
+    <div class="ksub" id="fin-pag-real-s">acumulado</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-pagamentos')">
+    <div class="klbl">Pagamento previsto</div><div class="kval" id="fin-pag-prev">—</div>
+    <div class="ksub" id="fin-pag-prev-s">total ano</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-saldo')">
+    <div class="klbl">Geração de caixa</div><div class="kval" id="fin-caixa">—</div>
+    <div class="ksub" id="fin-caixa-s">acumulado</div><span class="kchev">▼</span>
+  </div>
+</div>
+
+<!-- DRAWER RECEBIMENTOS -->
+<div class="drawer" id="fin-recebimentos">
+  <div class="drawer-inner">
+    <div class="dt">Recebimentos — Previsto vs Realizado</div>
+    <div class="ds">Por empreendimento · Jan–Dez 2026</div>
+    <div class="g2">
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Tower</div><div style="position:relative;height:200px"><canvas id="cFinRecTower"></canvas></div></div>
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Office</div><div style="position:relative;height:200px"><canvas id="cFinRecOffice"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER PAGAMENTOS -->
+<div class="drawer" id="fin-pagamentos">
+  <div class="drawer-inner">
+    <div class="dt">Pagamentos — Previsto vs Realizado</div>
+    <div class="ds">Por empreendimento · Jan–Dez 2026</div>
+    <div class="g2">
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Tower</div><div style="position:relative;height:200px"><canvas id="cFinPagTower"></canvas></div></div>
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Office</div><div style="position:relative;height:200px"><canvas id="cFinPagOffice"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER SALDO -->
+<div class="drawer" id="fin-saldo">
+  <div class="drawer-inner">
+    <div class="dt">Saldo final e geração de caixa</div>
+    <div class="ds">Evolução mensal · Tower e Office</div>
+    <div style="position:relative;height:220px"><canvas id="cFinSaldo"></canvas></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ INADIMPLÊNCIA ══ -->
+<div class="sec-head"><span class="sec-num" style="background:#6b1a1a">!</span><span class="sec-title">Inadimplência</span><span class="sec-sub">Acumulada e mensal</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleFin('fin-inadimp')">
+    <div class="klbl">Tower — acumulada</div><div class="kval" id="fin-inadimp-tower">—</div>
+    <div class="ksub" id="fin-inadimp-tower-s">última medição</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-inadimp')">
+    <div class="klbl">Tower — % inadimp.</div><div class="kval" id="fin-pct-tower">—<sub>%</sub></div>
+    <div class="ksub">do total a receber</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-inadimp')">
+    <div class="klbl">Office — acumulada</div><div class="kval" id="fin-inadimp-office">—</div>
+    <div class="ksub" id="fin-inadimp-office-s">última medição</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-inadimp')">
+    <div class="klbl">Office — % inadimp.</div><div class="kval" id="fin-pct-office">—<sub>%</sub></div>
+    <div class="ksub">do total a receber</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-inadimp')">
+    <div class="klbl">Total inadimplentes</div><div class="kval" id="fin-inadimp-clientes">—</div>
+    <div class="ksub">clientes</div><span class="kchev">▼</span>
+  </div>
+</div>
+<div class="drawer" id="fin-inadimp">
+  <div class="drawer-inner">
+    <div class="dt">Inadimplência mês a mês</div>
+    <div class="ds">Valor inadimplente e nº de clientes por empreendimento</div>
+    <div class="g2">
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Tower</div><div style="position:relative;height:200px"><canvas id="cFinInadTower"></canvas></div></div>
+      <div><div class="dt" style="font-size:12px;margin-bottom:6px">Office</div><div style="position:relative;height:200px"><canvas id="cFinInadOffice"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ SALDOS BANCÁRIOS ══ -->
+<div class="sec-head"><span class="sec-num" style="background:#1a5a2a">$</span><span class="sec-title">Saldos Bancários</span><span class="sec-sub">Tower · por banco</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleFin('fin-banco')">
+    <div class="klbl">Saldo total Tower</div><div class="kval" id="fin-banco-total">—</div>
+    <div class="ksub" id="fin-banco-total-s">último registro</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-banco')">
+    <div class="klbl">CEF</div><div class="kval" id="fin-banco-cef">—</div>
+    <div class="ksub" id="fin-banco-cef-s">saldo</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-banco')">
+    <div class="klbl">Santander CC</div><div class="kval" id="fin-banco-cc">—</div>
+    <div class="ksub" id="fin-banco-cc-s">saldo</div><span class="kchev">▼</span>
+  </div>
+  <div class="card gold" onclick="toggleFin('fin-banco')">
+    <div class="klbl">Santander Inv.</div><div class="kval" id="fin-banco-inv">—</div>
+    <div class="ksub" id="fin-banco-inv-s">saldo</div><span class="kchev">▼</span>
+  </div>
+</div>
+<div class="drawer" id="fin-banco">
+  <div class="drawer-inner">
+    <div class="dt">Evolução dos saldos bancários — Tower</div>
+    <div class="ds">Por banco · Jan–Dez 2026</div>
+    <div style="position:relative;height:220px"><canvas id="cFinBanco"></canvas></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══ DISTRATOS ══ -->
+<div class="sec-head"><span class="sec-num" style="background:#5a1a1a">D</span><span class="sec-title">Distratos</span><span class="sec-sub">Histórico completo</span></div>
+<div class="krow">
+  <div class="card red" onclick="toggleFin('fin-distratos')">
+    <div class="klbl">Total distratos</div><div class="kval" id="fin-dist-total">—</div>
+    <div class="ksub">contratos</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-distratos')">
+    <div class="klbl">Valor a devolver</div><div class="kval" id="fin-dist-devolver">—</div>
+    <div class="ksub">total</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-distratos')">
+    <div class="klbl">Valor retido</div><div class="kval" id="fin-dist-retido">—</div>
+    <div class="ksub">total</div><span class="kchev">▼</span>
+  </div>
+  <div class="card" onclick="toggleFin('fin-distratos')">
+    <div class="klbl">Empreendimento</div><div class="kval" id="fin-dist-emp" style="font-size:16px">—</div>
+    <div class="ksub">mais distratos</div><span class="kchev">▼</span>
+  </div>
+</div>
+<div class="drawer" id="fin-distratos">
+  <div class="drawer-inner">
+    <div class="dt">Distratos — tabela completa</div>
+    <div class="ds">Todos os contratos distratados</div>
+    <div class="tw"><table>
+      <thead><tr><th>Data</th><th>Doc</th><th>Empreendimento</th><th>Unidade</th><th class="r">Vlr. Contrato</th><th class="r">Vlr. Recebido</th><th class="r">Vlr. a Devolver</th><th class="r">Vlr. Retido</th><th>Cliente</th></tr></thead>
+      <tbody id="tb-fin-distratos"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<div style="height:40px"></div>
+</div><!-- /pane-financeiro -->
 </div><!-- /pane-rh -->
 <!-- /wrap -->
 
@@ -3673,16 +3851,341 @@ function buildChartRH(id){
   }
 }
 
+// switchTab definido no módulo financeiro
+
+
+
+// ══════ FINANCEIRO MODULE ══════
+// ══════════════════════════════════════
+// MÓDULO FINANCEIRO
+// ══════════════════════════════════════
+const SHEET_FIN = '14Spkd8tFUkzszsqgyEVd23P6ChIj36FHmvHaGt7T-DQ';
+const MESES_FIN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+let LIVE_FIN = {};
+let MES_FIN = 'todos';
+let CHS_FIN = {};
+const openDrawersFin = new Set();
+let LIVE_FIN_loaded = false;
+
+const fRFin = n => { if(!n&&n!==0) return '—'; const a=Math.abs(n); const s=n<0?'-':''; return s+(a>=1e6?'R$ '+(a/1e6).toFixed(2)+'M':a>=1e3?'R$ '+(a/1e3).toFixed(0)+'k':'R$ '+a.toFixed(0)); };
+function dcFin(id){ if(CHS_FIN[id]){try{CHS_FIN[id].destroy()}catch(e){}delete CHS_FIN[id];} }
+
+const cdoFin = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{display:true,position:'bottom',labels:{color:'#9a9490',boxWidth:10,font:{size:10}}}, tooltip:{backgroundColor:'#1e1e1e',titleColor:'#f0ece8',bodyColor:'#9a9490',borderColor:'#2a2a2a',borderWidth:1} },
+  scales:{ x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}}, y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',font:{size:10}}} }
+};
+
+async function fetchTabFin(tabName, range) {
+  const r = range ? `${encodeURIComponent(tabName)}!${range}` : encodeURIComponent(tabName);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_FIN}/values/${r}?key=${API_KEY}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`Erro ${res.status} ao buscar ${tabName}`);
+  return (await res.json()).values || [];
+}
+
+function sf(x) {
+  if(x===null||x===undefined||x===''||x==='#DIV/0!') return 0;
+  const n = parseFloat(String(x).replace(/[R$\s.]/g,'').replace(',','.'));
+  return isNaN(n)?0:n;
+}
+
+async function loadFinanceiro() {
+  LIVE_FIN_loaded = true;
+  const overlay = document.getElementById('loading-overlay');
+  if(overlay){ overlay.style.display='flex'; overlay.innerHTML=`<div style="text-align:center"><div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:#1a4a6b;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--t)">Carregando Financeiro</div></div>`; }
+
+  try {
+    const [baseRows, inadRows, distRows, saldoRows] = await Promise.all([
+      fetchTabFin('Base Financeira 2026'),
+      fetchTabFin('Inadimplência'),
+      fetchTabFin('Distratos'),
+      fetchTabFin('Saldos bancários'),
+    ]);
+
+    // ── BASE FINANCEIRA ──
+    // Tower: linhas 2-20 (índice 1-19), Office: linhas 23-41 (índice 22-40)
+    const parseEmp = (rows, startIdx) => {
+      const get = (rowOffset, colStart, colEnd) =>
+        (rows[startIdx+rowOffset]||[]).slice(colStart,colEnd).map(sf);
+      return {
+        rec_previsto:  get(3, 1, 13),
+        rec_realizado: get(4, 1, 13),
+        pag_previsto:  get(6, 1, 13),
+        pag_realizado: get(7, 1, 13),
+        geracao_caixa: get(11, 1, 13),
+        saldo_final:   get(12, 1, 13),
+        inadimplencia: get(16, 1, 13),
+        pct_inadimp:   get(18, 1, 13),
+        saldo_inicial: get(2, 1, 13),
+        rec_na_data:   get(13, 1, 13),
+        antecipacoes:  get(14, 1, 13),
+      };
+    };
+
+    LIVE_FIN.tower  = parseEmp(baseRows, 1);
+    LIVE_FIN.office = parseEmp(baseRows, 23);
+
+    // ── INADIMPLÊNCIA ──
+    const parseInad = (rows, startIdx) => ({
+      meses:      (rows[startIdx+1]||[]).slice(1,13).map((v,i)=>MESES_FIN[i]),
+      valor:      (rows[startIdx+1]||[]).slice(1,13).map((_,i)=>sf((rows[startIdx+1]||[])[i+1])),
+      acumulada:  rows.slice(startIdx+1, startIdx+13).map(r=>sf((r||[])[1])),
+      clientes:   rows.slice(startIdx+1, startIdx+13).map(r=>parseInt((r||[])[2])||0),
+      pct:        rows.slice(startIdx+1, startIdx+13).map(r=>sf((r||[])[3])),
+      val_acum:   rows.slice(startIdx+1, startIdx+13).map(r=>sf((r||[])[4])),
+      mes_a_mes:  rows.slice(startIdx+1, startIdx+13).map(r=>sf((r||[])[7])),
+      clientes_mm:rows.slice(startIdx+1, startIdx+13).map(r=>parseInt((r||[])[8])||0),
+    });
+
+    // Inadimplência acumulada Tower começa na linha 2 (idx 1), Office na 17 (idx 16)
+    LIVE_FIN.inadTower  = inadRows.slice(2, 14).map(r=>({ val: sf(r[1]), clientes: parseInt(r[2])||0, pct: sf(r[3]), mes_mes: sf(r[7]), cli_mm: parseInt(r[8])||0 }));
+    LIVE_FIN.inadOffice = inadRows.slice(17, 29).map(r=>({ val: sf(r[1]), clientes: parseInt(r[2])||0, pct: sf(r[3]), mes_mes: sf(r[7]), cli_mm: parseInt(r[8])||0 }));
+
+    // ── SALDOS BANCÁRIOS ──
+    LIVE_FIN.saldos = saldoRows.slice(2, 14).map((r,i)=>({
+      mes: MESES_FIN[i],
+      cef: sf(r[1]), cc: sf(r[2]), inv: sf(r[3]), total: sf(r[4]),
+      rendimento: sf(r[8]),
+    }));
+
+    // ── DISTRATOS ──
+    LIVE_FIN.distratos = distRows.slice(2).filter(r=>r[0]).map(r=>({
+      data: r[0]||'', doc: r[1]||'', emp: r[2]||'', unidade: r[3]||'',
+      contrato: sf(r[4]), recebido: sf(r[5]), devolver: sf(r[6]), retido: sf(r[7]), cliente: r[8]||'',
+    }));
+
+    buildFinMesFilter();
+    renderFinanceiro();
+    const now = new Date();
+    const lu = document.getElementById('last-update-badge');
+    if(lu) lu.textContent = `Fin. atualizado ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    console.log('✅ Financeiro carregado', LIVE_FIN);
+
+  } catch(err) {
+    console.error('Erro Financeiro:', err);
+    alert('Erro ao carregar financeiro: '+err.message);
+  }
+  if(overlay) overlay.style.display='none';
+}
+
+function buildFinMesFilter() {
+  const nav = document.getElementById('fin-mes-filters');
+  if(!nav) return;
+  nav.innerHTML = '';
+  const btnT = document.createElement('button');
+  btnT.className = 'mf active'; btnT.textContent = 'Todos';
+  btnT.onclick = () => setMesFin('todos', btnT);
+  nav.appendChild(btnT);
+  MESES_FIN.forEach((m,i) => {
+    // Só mostra meses com dados
+    const temDados = (LIVE_FIN.tower?.rec_realizado?.[i]||0) > 0 ||
+                     (LIVE_FIN.office?.rec_realizado?.[i]||0) > 0;
+    if(!temDados && i > 5) return; // só até onde há dados
+    const btn = document.createElement('button');
+    btn.className = 'mf'; btn.textContent = m;
+    btn.onclick = () => setMesFin(m, btn);
+    nav.appendChild(btn);
+  });
+}
+
+function setMesFin(mes, btn) {
+  MES_FIN = mes;
+  document.querySelectorAll('#fin-mes-filters .mf').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  openDrawersFin.forEach(id=>{ const d=document.getElementById(id); if(d)d.classList.remove('open'); });
+  openDrawersFin.clear();
+  document.querySelectorAll('#pane-financeiro .card').forEach(c=>c.classList.remove('active'));
+  Object.keys(CHS_FIN).forEach(k=>dcFin(k));
+  renderFinanceiro();
+}
+
+function getIdxFin() {
+  if(MES_FIN === 'todos') return null;
+  return MESES_FIN.indexOf(MES_FIN);
+}
+
+function sumFin(arr, idx) {
+  if(!arr||!arr.length) return 0;
+  if(idx===null) return arr.reduce((a,b)=>a+(b||0),0);
+  return arr[idx]||0;
+}
+
+function renderFinanceiro() {
+  const idx = getIdxFin();
+  const label = MES_FIN === 'todos' ? 'Jan–Mai acumulado' : MES_FIN+'/2026';
+
+  const tw = LIVE_FIN.tower||{}, of = LIVE_FIN.office||{};
+
+  const recReal = sumFin(tw.rec_realizado,idx) + sumFin(of.rec_realizado,idx);
+  const recPrev = sumFin(tw.rec_previsto,idx) + sumFin(of.rec_previsto,idx);
+  const pagReal = sumFin(tw.pag_realizado,idx) + sumFin(of.pag_realizado,idx);
+  const pagPrev = sumFin(tw.pag_previsto,idx) + sumFin(of.pag_previsto,idx);
+  const gerCaixa= sumFin(tw.geracao_caixa,idx) + sumFin(of.geracao_caixa,idx);
+
+  document.getElementById('fin-sub').textContent = label;
+  const setEl = (id,v,s) => { const e=document.getElementById(id); if(e) e.textContent=v; const es=document.getElementById(id+'-s'); if(es&&s!==undefined) es.textContent=s; };
+
+  setEl('fin-rec-real', fRFin(recReal), label);
+  setEl('fin-rec-prev', fRFin(recPrev), label);
+  setEl('fin-pag-real', fRFin(pagReal), label);
+  setEl('fin-pag-prev', fRFin(pagPrev), label);
+  setEl('fin-caixa', fRFin(gerCaixa), gerCaixa>=0?'positivo':'negativo');
+
+  // Inadimplência — pegar dados do mês ou último disponível
+  const getInad = (arr) => {
+    if(!arr||!arr.length) return {val:0,clientes:0,pct:0};
+    if(idx!==null) return arr[idx]||{val:0,clientes:0,pct:0};
+    const ult = arr.filter(r=>r.val>0).pop()||arr[0];
+    return ult||{val:0,clientes:0,pct:0};
+  };
+  const itw = getInad(LIVE_FIN.inadTower), iof = getInad(LIVE_FIN.inadOffice);
+  setEl('fin-inadimp-tower', fRFin(itw.val), idx!==null?MESES_FIN[idx]+'/2026':'último mês');
+  setEl('fin-pct-tower', (itw.pct*100).toFixed(1), '');
+  setEl('fin-inadimp-office', fRFin(iof.val), idx!==null?MESES_FIN[idx]+'/2026':'último mês');
+  setEl('fin-pct-office', (iof.pct*100).toFixed(1), '');
+  setEl('fin-inadimp-clientes', (itw.clientes+iof.clientes)+'', 'Tower+Office');
+
+  // Saldos bancários — último mês com dados
+  const saldos = LIVE_FIN.saldos||[];
+  const sBancos = idx!==null ? saldos[idx] : saldos.filter(s=>s.total>0).pop()||saldos[0];
+  if(sBancos) {
+    setEl('fin-banco-total', fRFin(sBancos.total), sBancos.mes+'/2026');
+    setEl('fin-banco-cef',   fRFin(sBancos.cef),   sBancos.mes+'/2026');
+    setEl('fin-banco-cc',    fRFin(sBancos.cc),     sBancos.mes+'/2026');
+    setEl('fin-banco-inv',   fRFin(sBancos.inv),    sBancos.mes+'/2026');
+  }
+
+  // Distratos
+  const dist = LIVE_FIN.distratos||[];
+  const totDevolver = dist.reduce((a,d)=>a+d.devolver,0);
+  const totRetido   = dist.reduce((a,d)=>a+d.retido,0);
+  const empCnt = dist.reduce((a,d)=>{a[d.emp]=(a[d.emp]||0)+1;return a},{});
+  const empLider = Object.entries(empCnt).sort((a,b)=>b[1]-a[1])[0];
+  setEl('fin-dist-total', dist.length, 'contratos');
+  setEl('fin-dist-devolver', fRFin(totDevolver), 'total');
+  setEl('fin-dist-retido', fRFin(totRetido), 'total');
+  setEl('fin-dist-emp', empLider?empLider[0]:'—', empLider?empLider[1]+' distratos':'');
+
+  // Tabela distratos
+  const tb = document.getElementById('tb-fin-distratos');
+  if(tb) {
+    tb.innerHTML = '';
+    dist.forEach(d=>{
+      const tr=document.createElement('tr');
+      const data=String(d.data).split('T')[0].split(' ')[0];
+      tr.innerHTML=`<td>${data}</td><td>${d.doc}</td><td style="color:var(--t)">${d.emp}</td><td>${d.unidade}</td>
+        <td class="r">${d.contrato>0?fRFin(d.contrato):'—'}</td>
+        <td class="r">${d.recebido>0?fRFin(d.recebido):'—'}</td>
+        <td class="r">${d.devolver>0?fRFin(d.devolver):'—'}</td>
+        <td class="r">${d.retido>0?fRFin(d.retido):'—'}</td>
+        <td style="font-size:11px;color:var(--t3)">${d.cliente}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  if(openDrawersFin.size) openDrawersFin.forEach(id=>buildChartFin(id));
+}
+
+function toggleFin(id) {
+  const d=document.getElementById(id); if(!d) return;
+  if(openDrawersFin.has(id)){
+    d.classList.remove('open'); openDrawersFin.delete(id);
+  } else {
+    d.classList.add('open'); openDrawersFin.add(id);
+    setTimeout(()=>buildChartFin(id),60);
+  }
+}
+
+function buildChartFin(id) {
+  const tw=LIVE_FIN.tower||{}, of=LIVE_FIN.office||{};
+  const meses=MESES_FIN;
+  const idx=getIdxFin();
+  const highlight=(arr,i)=>arr.map((v,j)=>(i===null||i===j)?v:v*0.3);
+
+  if(id==='fin-recebimentos') {
+    dcFin('cFinRecTower'); dcFin('cFinRecOffice');
+    const makeRecChart=(canvasId,emp)=>new Chart(document.getElementById(canvasId),{
+      type:'bar',data:{labels:meses,datasets:[
+        {label:'Previsto',data:emp.rec_previsto||[],backgroundColor:'rgba(255,255,255,.1)',borderRadius:3},
+        {label:'Realizado',data:(emp.rec_realizado||[]).map((v,i)=>highlight([v],0)[0]),backgroundColor:(emp.rec_realizado||[]).map((v,j)=>idx===null||idx===j?'#8B2E2E':'rgba(139,46,46,.3)'),borderRadius:3},
+      ]},options:{...cdoFin,scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1e3).toFixed(0)+'k'}}}}
+    });
+    CHS_FIN['cFinRecTower']=makeRecChart('cFinRecTower',tw);
+    CHS_FIN['cFinRecOffice']=makeRecChart('cFinRecOffice',of);
+  }
+
+  if(id==='fin-pagamentos') {
+    dcFin('cFinPagTower'); dcFin('cFinPagOffice');
+    const makePagChart=(canvasId,emp)=>new Chart(document.getElementById(canvasId),{
+      type:'bar',data:{labels:meses,datasets:[
+        {label:'Previsto',data:emp.pag_previsto||[],backgroundColor:'rgba(255,255,255,.1)',borderRadius:3},
+        {label:'Realizado',data:emp.pag_realizado||[],backgroundColor:(emp.pag_realizado||[]).map((_,j)=>idx===null||idx===j?'#C9943A':'rgba(201,148,58,.3)'),borderRadius:3},
+      ]},options:{...cdoFin,scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1e3).toFixed(0)+'k'}}}}
+    });
+    CHS_FIN['cFinPagTower']=makePagChart('cFinPagTower',tw);
+    CHS_FIN['cFinPagOffice']=makePagChart('cFinPagOffice',of);
+  }
+
+  if(id==='fin-saldo') {
+    dcFin('cFinSaldo');
+    CHS_FIN['cFinSaldo']=new Chart(document.getElementById('cFinSaldo'),{
+      type:'line',data:{labels:meses,datasets:[
+        {label:'Saldo final Tower',data:tw.saldo_final||[],borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.08)',tension:.3,fill:true,pointRadius:4,pointBackgroundColor:'#8B2E2E'},
+        {label:'Saldo final Office',data:of.saldo_final||[],borderColor:'#C9943A',backgroundColor:'rgba(201,148,58,.05)',tension:.3,fill:true,pointRadius:4,pointBackgroundColor:'#C9943A'},
+        {label:'Geração caixa Tower',data:tw.geracao_caixa||[],borderColor:'rgba(139,46,46,.4)',borderDash:[4,4],tension:.3,pointRadius:2},
+      ]},options:{...cdoFin,scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1e6).toFixed(2)+'M'}}}}
+    });
+  }
+
+  if(id==='fin-inadimp') {
+    dcFin('cFinInadTower'); dcFin('cFinInadOffice');
+    const makeInadChart=(canvasId,arr)=>{
+      if(!arr||!arr.length) return;
+      return new Chart(document.getElementById(canvasId),{
+        type:'bar',data:{labels:meses.slice(0,arr.length),datasets:[
+          {label:'Valor inadimplente',data:arr.map(r=>r.val),backgroundColor:arr.map((_,j)=>idx===null||idx===j?'#8B2E2E':'rgba(139,46,46,.3)'),borderRadius:3,yAxisID:'y'},
+          {label:'Nº clientes',data:arr.map(r=>r.clientes),type:'line',borderColor:'#C9943A',backgroundColor:'transparent',pointRadius:4,pointBackgroundColor:'#C9943A',tension:.3,yAxisID:'y1'},
+        ]},options:{...cdoFin,scales:{
+          x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},
+          y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1e3).toFixed(0)+'k'},position:'left'},
+          y1:{grid:{display:false},ticks:{color:'#5e5c58',stepSize:10},position:'right'},
+        }}
+      });
+    };
+    CHS_FIN['cFinInadTower']=makeInadChart('cFinInadTower',LIVE_FIN.inadTower);
+    CHS_FIN['cFinInadOffice']=makeInadChart('cFinInadOffice',LIVE_FIN.inadOffice);
+  }
+
+  if(id==='fin-banco') {
+    dcFin('cFinBanco');
+    const saldos=LIVE_FIN.saldos||[];
+    CHS_FIN['cFinBanco']=new Chart(document.getElementById('cFinBanco'),{
+      type:'line',data:{labels:saldos.map(s=>s.mes),datasets:[
+        {label:'CEF',data:saldos.map(s=>s.cef),borderColor:'#5a7a9a',backgroundColor:'transparent',tension:.3,pointRadius:3},
+        {label:'Santander CC',data:saldos.map(s=>s.cc),borderColor:'#C9943A',backgroundColor:'transparent',tension:.3,pointRadius:3},
+        {label:'Santander Inv.',data:saldos.map(s=>s.inv),borderColor:'#8B2E2E',backgroundColor:'rgba(139,46,46,.08)',tension:.3,fill:true,pointRadius:3},
+        {label:'Total',data:saldos.map(s=>s.total),borderColor:'#7abf7a',backgroundColor:'transparent',tension:.3,pointRadius:4,borderWidth:2},
+      ]},options:{...cdoFin,scales:{x:{grid:{display:false},ticks:{color:'#5e5c58',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5e5c58',callback:v=>'R$'+(v/1e6).toFixed(1)+'M'}}}}
+    });
+  }
+}
+
+// Atualizar switchTab para incluir Financeiro
 function switchTab(tab) {
   TAB_ATIVO = tab;
   document.querySelectorAll('.mod-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('pane-comercial').style.display = tab==='comercial'?'':'none';
   document.getElementById('pane-rh').style.display = tab==='rh'?'':'none';
+  document.getElementById('pane-financeiro').style.display = tab==='financeiro'?'':'none';
   const filtroMes = document.getElementById('filtro-mes-wrap');
-  if(filtroMes) filtroMes.style.display = tab==='comercial' ? 'flex' : 'none';
+  if(filtroMes) filtroMes.style.display = tab==='comercial'?'flex':'none';
   if(tab==='rh' && !LIVE_RH_RH_loaded) loadRH();
+  if(tab==='financeiro' && !LIVE_FIN_loaded) loadFinanceiro();
 }
+
 
 </script>
 
