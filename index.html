@@ -170,7 +170,7 @@ td.c{text-align:center}
     <div style="display:flex;align-items:center;gap:6px">
       <span style="font-size:10px;color:var(--t3);letter-spacing:.5px;text-transform:uppercase">Mês</span>
       <div id="mes-filters" style="display:flex;gap:4px">
-        <button class="mf active" onclick="setMes('todos',this)">Todos</button>
+        <button class="mf active" onclick="setMes(&quot;todos&quot;,this)">Todos</button>
       </div>
     </div>
   </div>
@@ -864,7 +864,7 @@ td.c{text-align:center}
 <!-- FILTRO DE MÊS -->
 <div class="mes-filter" id="mes-filter">
   <span class="mes-label">Período</span>
-  <button class="mf active" onclick="setMes('todos',this)">Todos</button>
+  <button class="mf active" onclick="setMes(&quot;todos&quot;,this)">Todos</button>
 </div>
 
 <!-- ══ 1. NPS INTERNO ══ -->
@@ -2756,7 +2756,7 @@ function buildMesesFilter() {
   const meses = [...mesesSet].sort((a,b)=>ordem.indexOf(a)-ordem.indexOf(b));
 
   const nav = document.getElementById('mes-filters');
-  nav.innerHTML = '<button class="mf active" onclick="setMes('todos',this)">Todos</button>';
+  nav.innerHTML = `<button class="mf active" onclick="setMes('todos',this)">Todos</button>`;
   meses.forEach(m=>{
     const btn=document.createElement('button');
     btn.className='mf';
