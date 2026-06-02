@@ -4479,8 +4479,8 @@ async function loadOperacional() {
     const headers = rows[0].map(h=>h.trim());
     const getIdx = name => headers.findIndex(h=>h.toLowerCase().includes(name.toLowerCase()));
 
-    const iData   = 0;
-    const iCustEsp= getIdx('CUSTO ESPERADO');
+    const iData      = getIdx('DATA FECHAMENTO');
+    const iCustEsp   = getIdx('CUSTO ESPERADO');
     const iCustAcEsp = getIdx('CUSTO ACUMULADO ESPERADO');
     const iCustReal  = getIdx('CUSTO REALIZADO');
     const iPctObra   = getIdx('% DE OBRA EXECUTADA');
@@ -4490,11 +4490,12 @@ async function loadOperacional() {
     const iTarefas   = getIdx('TAREFAS MENSAIS');
     const iResultado = getIdx('RESULTADO EM CUBS');
     const iCustRealCubs = getIdx('CUSTO REALIZADO EM CUBS');
+    console.log('Índices OP:', {iData,iCustEsp,iCustAcEsp,iCustReal,iPctObra,iAvanco,iEspMes,iAvAcEsp});
 
     const sf = x => { try { const v=parseFloat(x); return isNaN(v)||!isFinite(v)?0:v; } catch(e){return 0;} };
 
     LIVE_OP.tower = rows.slice(1).filter(r=>r[0]).map(r => ({
-      mes:          r[iData]||'',
+      mes:          iData>=0?(r[iData]||''):r[0]||'',
       custo_esp:    sf(r[iCustEsp]),
       custo_acum_esp: sf(r[iCustAcEsp]),
       custo_real:   sf(r[iCustReal]),
@@ -4714,8 +4715,7 @@ function renderOperacional() {
 
 async function loadCompras() {
   try {
-    const abaReal = await getAbaComp();
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_COMP}/values/${encodeURIComponent(abaReal)}?key=${API_KEY}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_COMP}/values/Planilha1?key=${API_KEY}`;
     const res = await fetch(url);
     if(!res.ok) throw new Error('Erro '+res.status);
     const rows = (await res.json()).values || [];
