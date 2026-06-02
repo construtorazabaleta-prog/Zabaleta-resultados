@@ -4485,33 +4485,32 @@ async function loadOperacional() {
       return headers.findIndex(h=>h.toLowerCase().includes(name.toLowerCase()));
     };
 
-    // Log headers para debug
     console.log('Headers TOWER:', headers);
-    const iData      = getIdx('DATA FECHAMENTO');
-    const iCustEsp   = getIdx('CUSTO ESPERADO');
-    const iCustAcEsp = getIdx('CUSTO ACUMULADO ESPERADO');
-    const iCustReal  = getIdx('CUSTO REALIZADO');
-    const iPctObra   = getIdx('% DE OBRA EXECUTADA');
-    // 'AVANÇO DO MÊS ' tem espaço no final na planilha
-    const iAvanco    = headers.findIndex(h=>h.trim().toUpperCase().startsWith('AVAN') && h.toUpperCase().includes('MÊS') && !h.toUpperCase().includes('ESPERADO'));
-    const iEspMes    = headers.findIndex(h=>h.trim().toUpperCase().startsWith('ESPERADO') && h.toUpperCase().includes('MÊS'));
-    const iAvAcEsp   = headers.findIndex(h=>h.trim().toUpperCase().startsWith('AVAN') && h.toUpperCase().includes('ACUMULADO'));
-    const iTarefas   = getIdx('TAREFAS');
-    const iResultado = headers.findIndex(h=>h.trim().toUpperCase()==='RESULTADO EM CUBS');
-    const iCustRealCubs = headers.findIndex(h=>h.trim().toUpperCase()==='CUSTO REALIZADO EM CUBS');
-    console.log('Índices OP:', {iData,iCustEsp,iCustAcEsp,iCustReal,iPctObra,iAvanco,iEspMes,iAvAcEsp,iTarefas});
+    // Índices baseados na estrutura conhecida da planilha
+    const iData      = 0;
+    const iCustEsp   = 1;
+    const iCustAcEsp = 2;
+    const iCustReal  = 3;
+    const iPctObra   = 7;   // % DE OBRA EXECUTADA
+    const iAvanco    = 8;   // AVANÇO DO MÊS
+    const iEspMes    = 9;   // ESPERADO PARA O MÊS
+    const iAvAcEsp   = 10;  // AVANÇO ACUMULADO ESPERADO
+    const iTarefas   = 11;  // TAREFAS MENSAIS...
+    const iResultado = 17;  // RESULTADO EM CUBS
+    const iCustRealCubs = 14; // CUSTO REALIZADO EM CUBS
+    console.log('Headers[7-11]:', headers[7], headers[8], headers[9], headers[10]);
 
     const sf = x => { try { const v=parseFloat(x); return isNaN(v)||!isFinite(v)?0:v; } catch(e){return 0;} };
 
     LIVE_OP.tower = rows.slice(1).filter(r=>r[0]).map(r => ({
       mes:          iData>=0?(r[iData]||''):r[0]||'',
-      custo_esp:    sf(r[iCustEsp]),
-      custo_acum_esp: sf(r[iCustAcEsp]),
-      custo_real:   sf(r[iCustReal]),
-      pct_obra:     (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iPctObra]),
-      avanco_mes:   (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iAvanco]),
-      esp_mes:      (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iEspMes]),
-      avanco_acum_esp: (x=>{ const v=sf(x); return v>1?v/100:v; })(r[iAvAcEsp]),
+      custo_esp:    sfR(r[iCustEsp]),
+      custo_acum_esp: sfR(r[iCustAcEsp]),
+      custo_real:   sfR(r[iCustReal]),
+      pct_obra:     sfPct(r[iPctObra]),
+      avanco_mes:   sfPct(r[iAvanco]),
+      esp_mes:      sfPct(r[iEspMes]),
+      avanco_acum_esp: sfPct(r[iAvAcEsp]),
       tarefas:      sf(r[iTarefas]),
       resultado_cubs: sf(r[iResultado]),
     }));
@@ -4749,7 +4748,21 @@ async function loadCompras() {
     const fornCols = [gi('Forn. 1'),gi('Forn. 2'),gi('Forn. 3'),gi('Forn. 4'),gi('Forn. 5')];
     const comCols  = [gi('Com. 1'),gi('Com. 2'),gi('Com. 3'),gi('Com. 4'),gi('Com. 5')];
 
-    const sf = x => { try { const v=parseFloat(x); return isNaN(v)||!isFinite(v)?null:v; } catch(e){return null;} };
+    // Parser PT-BR: 'R$ 1.707.615,00' → 1707615, '9,69%' → 0.0969, '1,15%' → 0.0115
+    const sfR = x => {
+      if(x===null||x===undefined||x==='') return 0;
+      const s = String(x).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.').trim();
+      const v = parseFloat(s);
+      return isNaN(v)||!isFinite(v)?0:v;
+    };
+    const sfPct = x => {
+      if(x===null||x===undefined||x==='') return 0;
+      const s = String(x).replace('%','').replace(/\./g,'').replace(',','.').trim();
+      const v = parseFloat(s);
+      if(isNaN(v)||!isFinite(v)) return 0;
+      return v/100; // '9,69%' → 9.69 → 0.0969
+    };
+    const sf = sfR;
     const fmtData = s => { if(!s) return ''; try { const d=new Date(s+'T12:00:00Z'); if(isNaN(d)) return s; return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); } catch(e){return s;} };
     const getMes = s => { if(!s) return ''; try { const d=new Date(s+'T12:00:00Z'); if(isNaN(d)) return ''; const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return ms[d.getUTCMonth()]+'/'+d.getUTCFullYear(); } catch(e){return ''; } };
 
