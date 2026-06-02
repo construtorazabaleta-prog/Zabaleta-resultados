@@ -4477,20 +4477,29 @@ async function loadOperacional() {
     if(rows.length < 2) throw new Error('Sem dados na aba TOWER');
 
     const headers = rows[0].map(h=>h.trim());
-    const getIdx = name => headers.findIndex(h=>h.toLowerCase().includes(name.toLowerCase()));
+    const getIdx = name => {
+      // Busca exata primeiro
+      let i = headers.findIndex(h=>h.toLowerCase().trim()===name.toLowerCase().trim());
+      if(i>=0) return i;
+      // Busca parcial como fallback
+      return headers.findIndex(h=>h.toLowerCase().includes(name.toLowerCase()));
+    };
 
+    // Log headers para debug
+    console.log('Headers TOWER:', headers);
     const iData      = getIdx('DATA FECHAMENTO');
     const iCustEsp   = getIdx('CUSTO ESPERADO');
     const iCustAcEsp = getIdx('CUSTO ACUMULADO ESPERADO');
     const iCustReal  = getIdx('CUSTO REALIZADO');
     const iPctObra   = getIdx('% DE OBRA EXECUTADA');
-    const iAvanco    = getIdx('AVANÇO DO MÊS');
-    const iEspMes    = getIdx('ESPERADO PARA O MÊS');
-    const iAvAcEsp   = getIdx('AVANÇO ACUMULADO ESPERADO');
-    const iTarefas   = getIdx('TAREFAS MENSAIS');
-    const iResultado = getIdx('RESULTADO EM CUBS');
-    const iCustRealCubs = getIdx('CUSTO REALIZADO EM CUBS');
-    console.log('Índices OP:', {iData,iCustEsp,iCustAcEsp,iCustReal,iPctObra,iAvanco,iEspMes,iAvAcEsp});
+    // 'AVANÇO DO MÊS ' tem espaço no final na planilha
+    const iAvanco    = headers.findIndex(h=>h.trim().toUpperCase().startsWith('AVAN') && h.toUpperCase().includes('MÊS') && !h.toUpperCase().includes('ESPERADO'));
+    const iEspMes    = headers.findIndex(h=>h.trim().toUpperCase().startsWith('ESPERADO') && h.toUpperCase().includes('MÊS'));
+    const iAvAcEsp   = headers.findIndex(h=>h.trim().toUpperCase().startsWith('AVAN') && h.toUpperCase().includes('ACUMULADO'));
+    const iTarefas   = getIdx('TAREFAS');
+    const iResultado = headers.findIndex(h=>h.trim().toUpperCase()==='RESULTADO EM CUBS');
+    const iCustRealCubs = headers.findIndex(h=>h.trim().toUpperCase()==='CUSTO REALIZADO EM CUBS');
+    console.log('Índices OP:', {iData,iCustEsp,iCustAcEsp,iCustReal,iPctObra,iAvanco,iEspMes,iAvAcEsp,iTarefas});
 
     const sf = x => { try { const v=parseFloat(x); return isNaN(v)||!isFinite(v)?0:v; } catch(e){return 0;} };
 
